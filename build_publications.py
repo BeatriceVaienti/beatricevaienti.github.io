@@ -30,17 +30,24 @@ def load_bib_entries(path):
         db = bibtexparser.load(f)
     return db.entries
 
-
 def format_authors(authors_str: str) -> str:
     """
     Show up to 6 authors, then 'et al.' if more.
+    Assumes a standard BibTeX 'author' field like:
+    "Surname, Name and Second, Name and Third, Name"
     """
     if not authors_str:
         return ""
-    authors = [a.strip() for a in authors_str.replace("\n", " ").split(" and ") if a.strip()]
+
+    # BibTeX uses ' and ' as author separator
+    raw = authors_str.replace("\n", " ")
+    authors = [a.strip() for a in raw.split(" and ") if a.strip()]
+
     if len(authors) <= 6:
         return ", ".join(authors)
-    return ", ".join(authors[:6]) + ", et al."
+    else:
+        return ", ".join(authors[:6]) + ", et al."
+
 
 
 def get_entry_url(entry) -> str | None:
@@ -159,6 +166,15 @@ def get_image_src_for_entry(entry) -> str:
         return local
     return PLACEHOLDER_IMAGE
 
+def get_entry_url(entry) -> str | None:
+    url = entry.get("url")
+    doi = entry.get("doi")
+    if url:
+        return url
+    if doi:
+        return f"https://doi.org/{doi}"
+    return None
+
 
 def entry_to_card(entry) -> str:
     title = escape(entry.get("title", "").strip("{}"))
@@ -167,21 +183,29 @@ def entry_to_card(entry) -> str:
     year = escape(entry.get("year", ""))
 
     url = get_entry_url(entry)
-    image_src = get_image_src_for_entry(entry)
+    image_src = escape(get_image_src_for_entry(entry))
     image_alt = f"{title} cover image"
+
+    # image with JS fallback to the placeholder if it fails to load
+    img_html = (
+        f'<img loading="lazy" src="{image_src}" '
+        f'onerror="this.onerror=null;this.src=\'{PLACEHOLDER_IMAGE}\';" '
+        f'alt="{escape(image_alt)}" class="gallery-image"/>'
+    )
 
     article_html = f"""
       <article class="gallery-item">
-        <img loading="lazy" src="{image_src}" alt="{escape(image_alt)}" class="gallery-image"/>
+        {img_html}
         <p>{title}</p>
         <p>{authors}</p>
         <p>{venue} {year}</p>
       </article>""".rstrip()
 
-    # Make the whole card clickable if URL exists
+    # Wrap whole card in a link when a URL exists
     if url:
         return (
-            f'<a class="gallery-item-link" href="{escape(url)}" target="_blank" rel="noopener">'
+            f'<a class="gallery-item-link" href="{escape(url)}" '
+            f'target="_blank" rel="noopener">'
             f"{article_html}"
             f"</a>"
         )
