@@ -6,7 +6,8 @@ import time
 import bibtexparser
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote_plus
+
 
 # -------- CONFIGURATION --------
 BIB_FILE = "scholar.bib"      # exported from Google Scholar
@@ -51,13 +52,28 @@ def format_authors(authors_str: str) -> str:
 
 
 def get_entry_url(entry) -> str | None:
+    """
+    Choose a URL for this entry:
+    1. Use explicit 'url' field if present
+    2. Else use DOI if present
+    3. Else fall back to a Google Scholar search by title
+    """
     url = entry.get("url")
     doi = entry.get("doi")
+    title = entry.get("title")
+
     if url:
         return url
+
     if doi:
         return f"https://doi.org/{doi}"
+
+    if title:
+        # Fallback: Google Scholar search for the title
+        return "https://scholar.google.com/scholar?q=" + quote_plus(title)
+
     return None
+
 
 
 def local_image_path_for_entry(entry) -> Path:
