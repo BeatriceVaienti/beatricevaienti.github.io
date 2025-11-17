@@ -20,7 +20,7 @@ POLITE_DELAY = 1.0            # seconds between remote requests
 session = requests.Session()
 session.headers.update(
     {
-        "User-Agent": "Mozilla/5.0 (compatible; PublicationImageFetcher/1.0; +https://example.com)"
+        "User-Agent": "Mozilla/5.0 (compatible; PublicationImageFetcher/1.0)"
     }
 )
 
@@ -32,12 +32,15 @@ def load_bib_entries(path):
 
 
 def format_authors(authors_str: str) -> str:
+    """
+    Show up to 6 authors, then 'et al.' if more.
+    """
     if not authors_str:
         return ""
-    authors = [a.strip() for a in authors_str.replace("\n", " ").split(" and ")]
-    if len(authors) <= 2:
+    authors = [a.strip() for a in authors_str.replace("\n", " ").split(" and ") if a.strip()]
+    if len(authors) <= 6:
         return ", ".join(authors)
-    return f"{authors[0]} et al."
+    return ", ".join(authors[:6]) + ", et al."
 
 
 def get_entry_url(entry) -> str | None:
@@ -80,7 +83,7 @@ def pick_candidate_image_urls(soup: BeautifulSoup, base_url: str) -> list[str]:
         if any(bad in lower for bad in ["logo", "icon", "spinner", "badge", "pixel", "sprite", "analytics"]):
             continue
 
-        # try to ignore tiny images if size is specified
+        # ignore very small images when size is specified
         width = int(img.get("width") or 0)
         height = int(img.get("height") or 0)
         if width and height and (width < 150 or height < 150):
@@ -105,7 +108,7 @@ def fetch_remote_image_for_entry(entry) -> str | None:
 
     # If already downloaded before, reuse it
     if dest_path.exists():
-        return str(dest_path).replace("\\", "/")
+        return dest_path.as_posix()
 
     # 1) Fetch the main page
     time.sleep(POLITE_DELAY)
@@ -114,10 +117,11 @@ def fetch_remote_image_for_entry(entry) -> str | None:
         return None
 
     ctype = resp.headers.get("Content-Type", "")
-    # If the URL itself is an image (rare but possible)
+
+    # If the URL itself is an image
     if ctype.startswith("image/"):
         dest_path.write_bytes(resp.content)
-        return str(dest_path).replace("\\", "/")
+        return dest_path.as_posix()
 
     if "html" not in ctype:
         return None
@@ -141,13 +145,15 @@ def fetch_remote_image_for_entry(entry) -> str | None:
             continue
 
         dest_path.write_bytes(img_resp.content)
-        return str(dest_path).replace("\\", "/")
+        return dest_path.as_posix()
 
     return None
 
 
 def get_image_src_for_entry(entry) -> str:
-    # Try to fetch a remote image, else fallback
+    """
+    Try remote image, otherwise use placeholder.
+    """
     local = fetch_remote_image_for_entry(entry)
     if local:
         return local
@@ -161,24 +167,26 @@ def entry_to_card(entry) -> str:
     year = escape(entry.get("year", ""))
 
     url = get_entry_url(entry)
-
     image_src = get_image_src_for_entry(entry)
     image_alt = f"{title} cover image"
 
-    link_html = (
-        f'<p><a href="{escape(url)}" target="_blank" rel="noopener">View paper</a></p>'
-        if url
-        else ""
-    )
-
-    return f"""
+    article_html = f"""
       <article class="gallery-item">
         <img loading="lazy" src="{image_src}" alt="{escape(image_alt)}" class="gallery-image"/>
         <p>{title}</p>
         <p>{authors}</p>
         <p>{venue} {year}</p>
-        {link_html}
       </article>""".rstrip()
+
+    # Make the whole card clickable if URL exists
+    if url:
+        return (
+            f'<a class="gallery-item-link" href="{escape(url)}" target="_blank" rel="noopener">'
+            f"{article_html}"
+            f"</a>"
+        )
+    else:
+        return article_html
 
 
 def build_cards_html(entries):
