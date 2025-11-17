@@ -107,14 +107,26 @@ def pick_candidate_image_urls(soup: BeautifulSoup, base_url: str) -> list[str]:
             continue
 
         # ignore very small images when size is specified
-        width = int(img.get("width") or 0)
-        height = int(img.get("height") or 0)
+        width_attr = img.get("width")
+        height_attr = img.get("height")
+
+        def parse_dim(attr):
+            if not attr:
+                return 0
+            s = str(attr).strip()
+            digits = "".join(ch for ch in s if ch.isdigit())
+            return int(digits) if digits else 0
+
+        width = parse_dim(width_attr)
+        height = parse_dim(height_attr)
+
         if width and height and (width < 150 or height < 150):
             continue
 
         candidates.append(full)
 
     return candidates
+
 
 
 def fetch_remote_image_for_entry(entry) -> str | None:
