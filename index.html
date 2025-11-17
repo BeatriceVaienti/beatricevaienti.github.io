@@ -253,11 +253,18 @@
     border-radius:10px;
     box-shadow:0 4px 8px rgba(0,0,0,0.2);
   }
-  .gallery{
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:center;
+    .gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
   }
+
+  .gallery-item-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+  }
+
   .gallery-item {
     width: min(320px, 90vw);
     margin: 10px;
@@ -268,27 +275,25 @@
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     text-align: left;
     cursor: pointer;
-    padding: 12px;          /* 👈 add this */
-    box-sizing: border-box; /* 👈 make padding not break the width */
   }
-  .gallery-item:hover{
-    transform:translateY(-5px);
+
+  .gallery-item:hover {
+    transform: translateY(-5px);
   }
-  .gallery-image{
-    width:100%;
-    height:auto;
-    display:block;
+
+  .gallery-image {
+    width: 100%;
+    height: auto;
+    display: block;
   }
-  .gallery-item-link {
-    text-decoration: none;
-    color: inherit;
-    display: inline-block; /* so it wraps the card nicely */
+
+  /* 👇 this is the missing spacing */
+  .gallery-item p {
+    margin: 6px 12px 8px;   /* top, horizontal, bottom */
   }
-  .gallery-item {
-    cursor: pointer; /* visual hint that it's clickable */
-  }
-  .gallery-item p:first-of-type{
-    font-weight:700;
+
+  .gallery-item p:first-of-type {
+    font-weight: 700;
   }
   .footer{
     background-color:#ED4264;
