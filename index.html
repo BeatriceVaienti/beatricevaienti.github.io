@@ -258,15 +258,18 @@
     flex-wrap:wrap;
     justify-content:center;
   }
-  .gallery-item{
-    width:min(320px, 90vw);
-    margin:10px;
-    background:#fff;
-    border-radius:10px;
-    overflow:hidden;
-    transition:transform 0.3s ease;
-    box-shadow:0 5px 15px rgba(0,0,0,0.3);
-    text-align:left;
+  .gallery-item {
+    width: min(320px, 90vw);
+    margin: 10px;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    text-align: left;
+    cursor: pointer;
+    padding: 12px;          /* 👈 add this */
+    box-sizing: border-box; /* 👈 make padding not break the width */
   }
   .gallery-item:hover{
     transform:translateY(-5px);
