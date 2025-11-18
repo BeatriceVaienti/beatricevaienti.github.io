@@ -1,35 +1,23 @@
 from pathlib import Path
 from html import escape
-import random
-import time
+import shutil
 
 import bibtexparser
-import requests
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin, quote_plus
-
+from urllib.parse import quote_plus
 
 # -------- CONFIGURATION --------
 BIB_FILE = "scholar.bib"      # exported from Google Scholar
 HTML_FILE = "index.html"      # your page file
 PLACEHOLDER_IMAGE = "img/papers/placeholder.jpg"
 IMAGE_DIR = Path("img/papers")
-REQUEST_TIMEOUT = 10
-POLITE_DELAY = 1.0            # seconds between remote requests
 # --------------------------------
-
-session = requests.Session()
-session.headers.update(
-    {
-        "User-Agent": "Mozilla/5.0 (compatible; PublicationImageFetcher/1.0)"
-    }
-)
 
 
 def load_bib_entries(path):
     with open(path, encoding="utf-8") as f:
         db = bibtexparser.load(f)
     return db.entries
+
 
 def format_authors(authors_str: str) -> str:
     """
@@ -49,6 +37,20 @@ def format_authors(authors_str: str) -> str:
     else:
         return ", ".join(authors[:6]) + ", et al."
 
+import re
+
+def slugify(text: str, max_words=4) -> str:
+    """
+    Convert title into a short, filesystem-safe slug.
+    """
+    if not text:
+        return "paper"
+
+    # Keep only letters/numbers/spaces
+    text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
+    words = text.split()
+    words = words[:max_words]  # shorten for filename
+    return "".join(w.capitalize() for w in words)
 
 
 def get_entry_url(entry) -> str | None:
@@ -74,134 +76,64 @@ def get_entry_url(entry) -> str | None:
 
     return None
 
-
-
 def local_image_path_for_entry(entry) -> Path:
-    key = entry.get("ID", "unknown").replace("/", "_")
-    return IMAGE_DIR / f"{key}.jpg"
-
-
-def try_download(url: str) -> requests.Response | None:
-    try:
-        resp = session.get(url, timeout=REQUEST_TIMEOUT)
-        resp.raise_for_status()
-        return resp
-    except Exception:
-        return None
-
-
-def pick_candidate_image_urls(soup: BeautifulSoup, base_url: str) -> list[str]:
-    imgs = soup.find_all("img")
-    candidates = []
-
-    for img in imgs:
-        src = img.get("src") or ""
-        if not src:
-            continue
-
-        full = urljoin(base_url, src)
-
-        # filter obvious non-content images
-        lower = full.lower()
-        if any(bad in lower for bad in ["logo", "icon", "spinner", "badge", "pixel", "sprite", "analytics"]):
-            continue
-
-        # ignore very small images when size is specified
-        width_attr = img.get("width")
-        height_attr = img.get("height")
-
-        def parse_dim(attr):
-            if not attr:
-                return 0
-            s = str(attr).strip()
-            digits = "".join(ch for ch in s if ch.isdigit())
-            return int(digits) if digits else 0
-
-        width = parse_dim(width_attr)
-        height = parse_dim(height_attr)
-
-        if width and height and (width < 150 or height < 150):
-            continue
-
-        candidates.append(full)
-
-    return candidates
-
-
-
-def fetch_remote_image_for_entry(entry) -> str | None:
     """
-    Try to fetch an image from the paper's online page.
-    Returns the local path (str) if successful, else None.
+    Construct a readable filename such as:
+    img/papers/2025_Vaienti_ClusteringLocalDistortions.jpg
     """
-    url = get_entry_url(entry)
-    if not url:
-        return None
+    year = entry.get("year", "xxxx")
 
+    # First author
+    authors = entry.get("author", "")
+    first_author = "unknown"
+    if authors:
+        first = authors.split(" and ")[0]
+        # Extract last name (BibTeX format: Lastname, Firstname)
+        if "," in first:
+            last = first.split(",")[0].strip()
+        else:
+            last = first.split()[-1]
+        first_author = last.capitalize()
+
+    # Title slug
+    title = entry.get("title", "")
+    title_slug = slugify(title)
+
+    filename = f"{year}_{first_author}_{title_slug}.jpg"
+    return IMAGE_DIR / filename
+
+
+
+def ensure_local_image_for_entry(entry) -> str:
+    """
+    Ensure there is a local image file for this entry.
+
+    - If img/papers/<bibkey>.jpg exists, use it
+    - Otherwise, copy placeholder.jpg to that path and use it
+
+    You can later replace those generated copies with real images.
+    """
     IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+
     dest_path = local_image_path_for_entry(entry)
 
-    # If already downloaded before, reuse it
-    if dest_path.exists():
-        return dest_path.as_posix()
+    if not dest_path.exists():
+        placeholder_path = Path(PLACEHOLDER_IMAGE)
+        if placeholder_path.exists():
+            shutil.copyfile(placeholder_path, dest_path)
+        else:
+            # If the placeholder itself is missing, just fall back to its path
+            return PLACEHOLDER_IMAGE
 
-    # 1) Fetch the main page
-    time.sleep(POLITE_DELAY)
-    resp = try_download(url)
-    if not resp:
-        return None
-
-    ctype = resp.headers.get("Content-Type", "")
-
-    # If the URL itself is an image
-    if ctype.startswith("image/"):
-        dest_path.write_bytes(resp.content)
-        return dest_path.as_posix()
-
-    if "html" not in ctype:
-        return None
-
-    # 2) Parse HTML and collect candidate images
-    soup = BeautifulSoup(resp.text, "html.parser")
-    candidates = pick_candidate_image_urls(soup, resp.url)
-
-    if not candidates:
-        return None
-
-    # 3) Pick a random candidate and download it
-    random.shuffle(candidates)
-    for img_url in candidates:
-        time.sleep(POLITE_DELAY)
-        img_resp = try_download(img_url)
-        if not img_resp:
-            continue
-        img_ctype = img_resp.headers.get("Content-Type", "")
-        if not img_ctype.startswith("image/"):
-            continue
-
-        dest_path.write_bytes(img_resp.content)
-        return dest_path.as_posix()
-
-    return None
+    return dest_path.as_posix()
 
 
 def get_image_src_for_entry(entry) -> str:
-    """
-    Try remote image, otherwise use placeholder.
-    """
-    local = fetch_remote_image_for_entry(entry)
-    if local:
-        return local
-    return PLACEHOLDER_IMAGE
-
-def get_entry_url(entry) -> str | None:
-    url = entry.get("url")
-    doi = entry.get("doi")
-    if url:
-        return url
-    if doi:
-        return f"https://doi.org/{doi}"
-    return None
+    try:
+        return ensure_local_image_for_entry(entry)
+    except Exception:
+        # Fallback if something unexpected happens
+        return PLACEHOLDER_IMAGE
 
 
 def entry_to_card(entry) -> str:
