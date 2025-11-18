@@ -1,15 +1,23 @@
 from pathlib import Path
 from html import escape
 import shutil
+import re
 
 import bibtexparser
 from urllib.parse import quote_plus
+from PIL import Image
 
 # -------- CONFIGURATION --------
-BIB_FILE = "scholar.bib"      # exported from Google Scholar
-HTML_FILE = "index.html"      # your page file
-PLACEHOLDER_IMAGE = "img/papers/placeholder.jpg"
-IMAGE_DIR = Path("img/papers")
+BIB_FILE = "scholar.bib"                # exported from Google Scholar
+HTML_FILE = "index.html"                # your page file
+
+ORIGINAL_IMAGE_DIR = Path("img/papers")                 # where you store/replace originals
+CROPPED_IMAGE_DIR = Path("img/papers_cropped_smaller")  # auto-generated smaller copies
+
+PLACEHOLDER_IMAGE = ORIGINAL_IMAGE_DIR / "placeholder.jpg"
+
+TARGET_SIZE = (600, 400)    # width, height in pixels for the cropped/downscaled images
+TARGET_RATIO = (3, 2)       # width:height aspect ratio for cropping (3:2 works nicely for cards)
 # --------------------------------
 
 
@@ -22,13 +30,12 @@ def load_bib_entries(path):
 def format_authors(authors_str: str) -> str:
     """
     Show up to 6 authors, then 'et al.' if more.
-    Assumes a standard BibTeX 'author' field like:
+    Assumes standard BibTeX 'author' field:
     "Surname, Name and Second, Name and Third, Name"
     """
     if not authors_str:
         return ""
 
-    # BibTeX uses ' and ' as author separator
     raw = authors_str.replace("\n", " ")
     authors = [a.strip() for a in raw.split(" and ") if a.strip()]
 
@@ -36,21 +43,6 @@ def format_authors(authors_str: str) -> str:
         return ", ".join(authors)
     else:
         return ", ".join(authors[:6]) + ", et al."
-
-import re
-
-def slugify(text: str, max_words=4) -> str:
-    """
-    Convert title into a short, filesystem-safe slug.
-    """
-    if not text:
-        return "paper"
-
-    # Keep only letters/numbers/spaces
-    text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
-    words = text.split()
-    words = words[:max_words]  # shorten for filename
-    return "".join(w.capitalize() for w in words)
 
 
 def get_entry_url(entry) -> str | None:
@@ -71,61 +63,120 @@ def get_entry_url(entry) -> str | None:
         return f"https://doi.org/{doi}"
 
     if title:
-        # Fallback: Google Scholar search for the title
         return "https://scholar.google.com/scholar?q=" + quote_plus(title)
 
     return None
 
-def local_image_path_for_entry(entry) -> Path:
+
+def slugify(text: str, max_words=4) -> str:
+    """
+    Convert title into a short, filesystem-safe slug.
+    e.g. "Segmentation and Clustering..." -> "SegmentationAndClustering"
+    """
+    if not text:
+        return "paper"
+
+    text = re.sub(r"[^a-zA-Z0-9\s]", "", text)
+    words = text.split()
+    words = words[:max_words]
+    return "".join(w.capitalize() for w in words)
+
+
+def original_image_path_for_entry(entry) -> Path:
     """
     Construct a readable filename such as:
-    img/papers/2025_Vaienti_ClusteringLocalDistortions.jpg
+    img/papers/2025_Vaienti_SegmentationAndClustering.jpg
     """
     year = entry.get("year", "xxxx")
 
-    # First author
     authors = entry.get("author", "")
-    first_author = "unknown"
+    first_author = "Unknown"
     if authors:
         first = authors.split(" and ")[0]
-        # Extract last name (BibTeX format: Lastname, Firstname)
         if "," in first:
             last = first.split(",")[0].strip()
         else:
             last = first.split()[-1]
         first_author = last.capitalize()
 
-    # Title slug
     title = entry.get("title", "")
     title_slug = slugify(title)
 
     filename = f"{year}_{first_author}_{title_slug}.jpg"
-    return IMAGE_DIR / filename
+    return ORIGINAL_IMAGE_DIR / filename
 
+
+def cropped_image_path_for_entry(entry) -> Path:
+    """
+    Same filename as original, but in the cropped/smaller directory.
+    """
+    orig = original_image_path_for_entry(entry).name
+    return CROPPED_IMAGE_DIR / orig
+
+
+def process_image_to_cropped(source: Path, dest: Path):
+    """
+    Open 'source', center-crop to TARGET_RATIO, resize to TARGET_SIZE,
+    and save to 'dest'.
+    """
+    CROPPED_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+
+    img = Image.open(source)
+    img = img.convert("RGB")
+    w, h = img.size
+
+    target_ratio = TARGET_RATIO[0] / TARGET_RATIO[1]
+    orig_ratio = w / h
+
+    # Center crop to target aspect ratio
+    if orig_ratio > target_ratio:
+        # Image is wider than target: crop left/right
+        new_w = int(h * target_ratio)
+        left = (w - new_w) // 2
+        right = left + new_w
+        top = 0
+        bottom = h
+    else:
+        # Image is taller than target: crop top/bottom
+        new_h = int(w / target_ratio)
+        top = (h - new_h) // 2
+        bottom = top + new_h
+        left = 0
+        right = w
+
+    img = img.crop((left, top, right, bottom))
+    img = img.resize(TARGET_SIZE, Image.LANCZOS)
+
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    img.save(dest, format="JPEG", quality=85, optimize=True)
 
 
 def ensure_local_image_for_entry(entry) -> str:
     """
-    Ensure there is a local image file for this entry.
+    Ensure there is a cropped/small image for this entry.
 
-    - If img/papers/<bibkey>.jpg exists, use it
-    - Otherwise, copy placeholder.jpg to that path and use it
-
-    You can later replace those generated copies with real images.
+    - If original (img/papers/...) doesn't exist, copy placeholder.jpg there.
+    - Then create/update cropped version in img/papers_cropped_smaller/.
+    - Return the path to the cropped image (as a POSIX string).
     """
-    IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+    ORIGINAL_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
-    dest_path = local_image_path_for_entry(entry)
+    orig_path = original_image_path_for_entry(entry)
+    cropped_path = cropped_image_path_for_entry(entry)
 
-    if not dest_path.exists():
-        placeholder_path = Path(PLACEHOLDER_IMAGE)
-        if placeholder_path.exists():
-            shutil.copyfile(placeholder_path, dest_path)
+    # If original doesn't exist, copy placeholder
+    if not orig_path.exists():
+        if PLACEHOLDER_IMAGE.exists():
+            shutil.copyfile(PLACEHOLDER_IMAGE, orig_path)
         else:
-            # If the placeholder itself is missing, just fall back to its path
-            return PLACEHOLDER_IMAGE
+            # If even placeholder is missing, just bail out to placeholder path
+            return PLACEHOLDER_IMAGE.as_posix()
 
-    return dest_path.as_posix()
+    # If cropped doesn't exist or is older than original, (re)create it
+    if (not cropped_path.exists()) or (orig_path.stat().st_mtime > cropped_path.stat().st_mtime):
+        process_image_to_cropped(orig_path, cropped_path)
+
+    return cropped_path.as_posix()
 
 
 def get_image_src_for_entry(entry) -> str:
@@ -133,7 +184,7 @@ def get_image_src_for_entry(entry) -> str:
         return ensure_local_image_for_entry(entry)
     except Exception:
         # Fallback if something unexpected happens
-        return PLACEHOLDER_IMAGE
+        return PLACEHOLDER_IMAGE.as_posix()
 
 
 def entry_to_card(entry) -> str:
@@ -146,10 +197,9 @@ def entry_to_card(entry) -> str:
     image_src = escape(get_image_src_for_entry(entry))
     image_alt = f"{title} cover image"
 
-    # image with JS fallback to the placeholder if it fails to load
     img_html = (
         f'<img loading="lazy" src="{image_src}" '
-        f'onerror="this.onerror=null;this.src=\'{PLACEHOLDER_IMAGE}\';" '
+        f'onerror="this.onerror=null;this.src=\'{PLACEHOLDER_IMAGE.as_posix()}\';" '
         f'alt="{escape(image_alt)}" class="gallery-image"/>'
     )
 
@@ -161,7 +211,6 @@ def entry_to_card(entry) -> str:
         <p>{venue} {year}</p>
       </article>""".rstrip()
 
-    # Wrap whole card in a link when a URL exists
     if url:
         return (
             f'<a class="gallery-item-link" href="{escape(url)}" '
@@ -174,7 +223,6 @@ def entry_to_card(entry) -> str:
 
 
 def build_cards_html(entries):
-    # Sort: most recent year first, then title
     def sort_key(e):
         year = e.get("year", "0000")
         return (year, e.get("title", ""))
