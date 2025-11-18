@@ -223,11 +223,16 @@ def entry_to_card(entry) -> str:
 
 
 def build_cards_html(entries):
+    # Sort: earliest year first, then title
     def sort_key(e):
-        year = e.get("year", "0000")
+        year_str = str(e.get("year", "0"))
+        try:
+            year = int(year_str)
+        except ValueError:
+            year = 0
         return (year, e.get("title", ""))
 
-    sorted_entries = sorted(entries, key=sort_key, reverse=True)
+    sorted_entries = sorted(entries, key=sort_key)  # ascending
     cards = [entry_to_card(e) for e in sorted_entries]
     return "\n".join(cards)
 
