@@ -223,18 +223,33 @@ def entry_to_card(entry) -> str:
 
 
 def build_cards_html(entries):
-    # Sort: earliest year first, then title
+    """
+    Sort publications:
+    1. Entries with a valid year first, most recent → oldest
+    2. Entries without a valid year always go last
+    """
+
     def sort_key(e):
-        year_str = str(e.get("year", "0"))
+        year_str = str(e.get("year", "")).strip()
+
+        # Try to parse year
         try:
             year = int(year_str)
-        except ValueError:
+            has_year = True
+        except Exception:
+            # Missing or invalid year
             year = 0
-        return (year, e.get("title", ""))
+            has_year = False
 
-    sorted_entries = sorted(entries, key=sort_key)  # ascending
+        # We want:
+        #   has_year=True (0) before has_year=False (1)
+        #   and for valid years: larger year (more recent) first
+        return (0 if has_year else 1, -year, e.get("title", ""))
+
+    sorted_entries = sorted(entries, key=sort_key)
     cards = [entry_to_card(e) for e in sorted_entries]
     return "\n".join(cards)
+
 
 
 def inject_cards_into_html(html_path, cards_html):
