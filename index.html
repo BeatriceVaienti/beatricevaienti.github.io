@@ -167,6 +167,78 @@
     </p>
   </footer>
   <!-- No JS needed anymore; removed JSON fetch -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const gallery = document.querySelector('.gallery');
+  if (!gallery) return;
+
+  // Cards are anchors wrapping articles OR plain articles
+  const cards = Array.from(gallery.children).filter(function(el) {
+    return el.matches('.gallery-item-link, .gallery-item');
+  });
+
+  if (cards.length === 0) return;
+
+  let expanded = false;
+  let toggleBtn = null;
+
+  function updateVisibility() {
+    if (expanded) {
+      cards.forEach(function(el) { el.style.display = ''; });
+      if (toggleBtn) {
+        toggleBtn.textContent = 'Show fewer publications';
+      }
+      return;
+    }
+
+    const firstCard = cards[0];
+    const cardRect = firstCard.getBoundingClientRect();
+    const cardWidth = cardRect.width || 1;
+    const galleryWidth = gallery.clientWidth || cardWidth;
+
+    // How many cards per row fit?
+    var perRow = Math.max(1, Math.floor(galleryWidth / cardWidth));
+    var maxVisible = perRow * 2; // two rows
+
+    cards.forEach(function(el, idx) {
+      el.style.display = (idx < maxVisible) ? '' : 'none';
+    });
+
+    if (toggleBtn) {
+      if (cards.length <= maxVisible) {
+        toggleBtn.style.display = 'none';
+      } else {
+        toggleBtn.style.display = 'inline-block';
+        toggleBtn.textContent = 'Show all publications';
+      }
+    }
+  }
+
+  // Create the button
+  toggleBtn = document.createElement('button');
+  toggleBtn.className = 'show-more-btn';
+  toggleBtn.type = 'button';
+  toggleBtn.textContent = 'Show all publications';
+
+  toggleBtn.addEventListener('click', function() {
+    expanded = !expanded;
+    updateVisibility();
+  });
+
+  // Insert after the gallery
+  gallery.insertAdjacentElement('afterend', toggleBtn);
+
+  // Update on resize (only matters when not expanded)
+  window.addEventListener('resize', function() {
+    if (!expanded) {
+      updateVisibility();
+    }
+  });
+
+  // Initial layout
+  updateVisibility();
+});
+</script>
 </body>
 <style>* {
   box-sizing: border-box;
