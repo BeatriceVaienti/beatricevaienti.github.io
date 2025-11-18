@@ -465,6 +465,39 @@ document.addEventListener('DOMContentLoaded', function() {
   updateVisibility();
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const collapsibleCards = document.querySelectorAll('.cv-card-collapsible');
+
+  collapsibleCards.forEach(function(card) {
+    const toggle = card.querySelector('.cv-card-toggle');
+    const body = card.querySelector('.cv-card-body');
+    if (!toggle || !body) return;
+
+    // Initial state: collapsed
+    card.classList.add('is-collapsed');
+    card.setAttribute('aria-expanded', 'false');
+
+    toggle.addEventListener('click', function() {
+      const isCollapsed = card.classList.toggle('is-collapsed');
+      const expanded = !isCollapsed;
+      card.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+
+      // Simple icon change +/–
+      const icon = toggle.querySelector('.cv-card-toggle-icon');
+      if (icon) icon.textContent = expanded ? '−' : '+';
+
+      // Show/hide body
+      if (expanded) {
+        body.style.display = 'block';
+      } else {
+        body.style.display = 'none';
+      }
+    });
+  });
+});
+</script>
+
 </body>
 <style>* {
   box-sizing: border-box;
@@ -615,23 +648,42 @@ document.addEventListener('DOMContentLoaded', function() {
   .show-more-btn:hover {
     opacity: 0.9;
   }
-  /* Masonry-style CV layout */
-  .cv-grid {
-    column-width: 280px;      /* approximate card width */
-    column-gap: 20px;         /* horizontal gap between "columns" */
+    /* CV layout: fixed card on the left, masonry on the right */
+  .cv-layout {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
     margin-top: 20px;
     text-align: left;
+  }
+
+  .cv-card--current {
+    flex: 0 0 320px;
+  }
+
+  @media (max-width: 900px) {
+    .cv-layout {
+      flex-direction: column;
+    }
+    .cv-card--current {
+      flex: 1 1 auto;
+    }
+  }
+
+  /* Masonry-style columns for the collapsible cards */
+  .cv-grid {
+    column-width: 280px;
+    column-gap: 20px;
   }
 
   .cv-card {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 10px;
-    padding: 20px 22px;
     box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-    margin: 0 0 20px;         /* vertical gap between cards */
-    break-inside: avoid;      /* avoid card splitting across columns */
-    display: inline-block;    /* needed for column layout */
-    width: 100%;              /* fill column width */
+    margin: 0 0 20px;
+    break-inside: avoid;
+    display: inline-block;
+    width: 100%;
   }
 
   .cv-card h3 {
@@ -664,36 +716,37 @@ document.addEventListener('DOMContentLoaded', function() {
     text-decoration: underline;
   }
 
+  /* Collapsible cards */
+  .cv-card-collapsible {
+    padding: 0;
+  }
 
-  .cv-card h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
+  .cv-card-toggle {
+    width: 100%;
+    padding: 14px 18px;
+    border: none;
+    background: transparent;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .cv-card-toggle-icon {
     font-size: 1.1rem;
   }
 
-  .cv-list {
-    list-style: none;
-    padding-left: 0;
-    margin: 0;
+  .cv-card-body {
+    padding: 0 18px 16px;
   }
 
-  .cv-list li {
-    margin-bottom: 12px;
+  .cv-card-collapsible[aria-expanded="false"] .cv-card-body,
+  .cv-card-collapsible.is-collapsed .cv-card-body {
+    display: none;
   }
 
-  .cv-date {
-    font-size: 0.85rem;
-    color: #666;
-  }
-
-  .cv-card a {
-    color: #ED4264;
-    text-decoration: none;
-  }
-
-  .cv-card a:hover {
-    text-decoration: underline;
-  }
 
   @media (max-width: 640px){
     .header h1{
