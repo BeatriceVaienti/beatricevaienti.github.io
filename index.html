@@ -577,10 +577,10 @@ document.addEventListener('DOMContentLoaded', function() {
   .show-more-btn:hover {
     opacity: 0.9;
   }
-    .cv-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
+  /* Masonry-style CV layout */
+  .cv-grid {
+    column-width: 280px;      /* approximate card width */
+    column-gap: 20px;         /* horizontal gap between "columns" */
     margin-top: 20px;
     text-align: left;
   }
@@ -590,7 +590,42 @@ document.addEventListener('DOMContentLoaded', function() {
     border-radius: 10px;
     padding: 20px 22px;
     box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    margin: 0 0 20px;         /* vertical gap between cards */
+    break-inside: avoid;      /* avoid card splitting across columns */
+    display: inline-block;    /* needed for column layout */
+    width: 100%;              /* fill column width */
   }
+
+  .cv-card h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+  }
+
+  .cv-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  .cv-list li {
+    margin-bottom: 12px;
+  }
+
+  .cv-date {
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .cv-card a {
+    color: #ED4264;
+    text-decoration: none;
+  }
+
+  .cv-card a:hover {
+    text-decoration: underline;
+  }
+
 
   .cv-card h3 {
     margin-top: 0;
