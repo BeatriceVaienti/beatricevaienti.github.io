@@ -845,10 +845,12 @@ document.addEventListener('DOMContentLoaded', function() {
   .about-news-wrapper {
     display: flex;
     flex-direction: column;   /* default: stacked on mobile */
-    gap: 20px;
+    gap: 10px;
   }
-
-  /* Side-by-side on larger screens */
+  .about-news-wrapper .section-light {
+    margin: 10px;  /* was 20px — halves horizontal spacing */
+  }
+    /* Side-by-side on larger screens */
   @media (min-width: 900px) {
     .about-news-wrapper {
       flex-direction: row;
