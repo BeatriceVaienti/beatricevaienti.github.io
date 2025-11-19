@@ -405,6 +405,22 @@
   </footer>
   <!-- No JS needed anymore; removed JSON fetch -->
 <script>
+function randomColor() {
+  return "#" + Math.floor(Math.random()*16777215).toString(16).padStart(6, "0");
+}
+
+function updateGradient() {
+  const base1 = "#FFEDBC";   // your first color
+  const base2 = "#ED4264";   // your second color
+  const c3 = randomColor();
+  const c4 = randomColor();
+
+  document.body.style.background =
+    `linear-gradient(135deg, ${base1}, ${c3}, ${c4}, ${base2})`;
+}
+
+window.addEventListener("load", updateGradient);
+
 document.addEventListener('DOMContentLoaded', function() {
   const gallery = document.querySelector('.gallery');
   if (!gallery) return;
@@ -531,14 +547,6 @@ document.addEventListener('DOMContentLoaded', function() {
     margin:0;
     padding:0;
     font-family:'Roboto', sans-serif;
-    background:
-    radial-gradient(circle at 20% 30%, #FFEDBC 0%, transparent 60%),
-    radial-gradient(circle at 80% 20%, #ED4264 0%, transparent 60%),
-    radial-gradient(circle at 60% 70%, #FF9EC2 0%, transparent 60%),
-    radial-gradient(circle at 30% 80%, #FFD5E5 0%, transparent 60%),
-    #ED4264; /* fallback */
-    background-blend-mode: screen;
-    background-attachment: fixed;
     color:#333;
     line-height:1.6;
   }
