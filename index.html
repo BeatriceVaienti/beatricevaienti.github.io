@@ -542,10 +542,11 @@ document.addEventListener('DOMContentLoaded', function() {
     top:0;
     left:0;
     width:100%;
-    z-index:0;
+    z-index:1;
     padding:20px 0;
     text-align:center;
     color:white;
+    pointer-events: none;
   }
   .header h1, .header p{
     font-family:'DM Serif Display', serif;
@@ -558,8 +559,17 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size:48px;
     transform:translateY(-20px);
   }
+    /* Make anchor jumps account for the fixed header/nav height */
+  #bio,
+  #news,
+  #cv,
+  #projects,
+  #contact {
+    scroll-margin-top: 120px;  /* adjust if needed (depends on header+nav height) */
+  }
+
   .navigation{
-    background-color:transparent;
+    background: rgba(0,0,0,0.15);  /* light translucent backdrop so text stays readable */
     color:white;
     overflow:hidden;
     padding:10px 0;
@@ -569,9 +579,9 @@ document.addEventListener('DOMContentLoaded', function() {
     width:100%;
     top:30px;
     right:20px;
-    z-index:9999;
+    z-index:10000;                  /* keep it above everything */
+    backdrop-filter: blur(6px);     /* optional: nice glass effect */
   }
-
   .navigation a{
     display:inline-block;
     margin:0 4px;
