@@ -16,32 +16,26 @@
     <a href="#bio" id="navigation-about">About</a>
   </nav>
   <main id="main" role="main" class="main-content">
-    <!-- About -->
-    <section id="bio" class="section">
-      <div id="if1ih" class="section-light">
-        <h2>About Me
-        </h2>
-        <p id="i5032">
-          I recently completed my PhD in Digital Humanities 
-          at the Digital Humanities Laboratory - DHLAB (EPFL).
-          I hold a MSc in Building Engineering and Architecture.
-          In my research I studied the Western cartographic depiction of Jerusalem 
-          between 1810 and 1925, focusing on errors and biases, 
-          and how they can be used to discover historical information.
-        </p>
-      </div>
-    </section>
-    <!-- News -->
-    <section id="news" class="section">
-      <div class="section-light">
-        <h2>News</h2>
-        <ul class="news-list">
-          <li>
-            <strong>17 September 2025 -</strong> I successfully completed my private PhD defense.
-          </li>
-        </ul>
-      </div>
-    </section>
+
+    <div class="about-news-wrapper">
+      <section id="bio" class="section">
+        <div class="section-light">
+          <h2>About Me</h2>
+          ...
+        </div>
+      </section>
+
+      <section id="news" class="section">
+        <div class="section-light">
+          <h2>News</h2>
+          <ul class="news-list">
+            <li><strong>17 December 2024 —</strong> I successfully completed my private PhD defense.</li>
+          </ul>
+        </div>
+      </section>
+
+    </div>
+
     <!-- CV -->
     <section id="cv" class="section">
       <div class="section-light">
@@ -770,14 +764,23 @@ document.addEventListener('DOMContentLoaded', function() {
   .cv-card-collapsible.is-collapsed .cv-card-body {
     display: none;
   }
+  
+  /* Wrapper for a two-column layout */
+  .about-news-wrapper {
+    display: flex;
+    flex-direction: column;   /* default: stacked on mobile */
+    gap: 20px;
+  }
 
+  /* Side-by-side on larger screens */
   @media (min-width: 900px) {
+    .about-news-wrapper {
+      flex-direction: row;
+    }
+
     #bio.section,
     #news.section {
-      display: inline-block;
-      vertical-align: top;
       width: 50%;
-      box-sizing: border-box;
     }
   }
 
