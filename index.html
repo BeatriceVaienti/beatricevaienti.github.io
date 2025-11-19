@@ -37,25 +37,20 @@
         <div class="section-light">
           <h2>News</h2>
           <ul class="news-list">
-
-            <!-- NEWEST NEWS ITEM -->
             <li>
               <strong>February 2026 —</strong>
-              I published a new paper: 
-              <em>“Georeferencing historical maps using local feature matching and Delaunay consistency”</em>,  
-              in <strong>Cartography and Geographic Information Science</strong>.  
-              <a href="https://www.tandfonline.com/doi/full/10.1080/15230406.2025.2566789#abstract" target="_blank" rel="noopener">Read the paper</a>.
+              I published a new paper:
+              <em>“Georeferencing historical maps using local feature matching and Delaunay consistency”</em>,
+              in <strong>Cartography and Geographic Information Science</strong>.
+              <a href="https://www.tandfonline.com/doi/full/10.1080/15230406.2025.2566789#abstract" target="_blank" rel="noopener">
+                Read the paper
+              </a>.
             </li>
-
-            <!-- EXISTING ITEM -->
-            <li>
-              <strong>17 September 2025 —</strong>
-              I successfully completed my private PhD defense!
-            </li>
-
+            <li><strong>17 September 2025 —</strong> I successfully completed my private PhD defense!</li>
+            <!-- future news go here -->
           </ul>
         </div>
-</section>
+      </section>
 
     </div>
     <!-- Publications -->
@@ -542,6 +537,69 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+  const aboutSection = document.querySelector('#bio .section-light');
+  const newsSection  = document.querySelector('#news .section-light');
+  const newsList     = document.querySelector('#news .news-list');
+
+  if (!aboutSection || !newsSection || !newsList) return;
+
+  const items = Array.from(newsList.querySelectorAll('li'));
+  if (items.length <= 1) return; // nothing to collapse
+
+  let expanded = false;
+  let toggleBtn = null;
+  const maxVisible = 3; // how many newest items to show when collapsed
+
+  function applyCollapsedState() {
+    items.forEach(function(li, index) {
+      li.style.display = (expanded || index < maxVisible) ? '' : 'none';
+    });
+
+    if (toggleBtn) {
+      toggleBtn.textContent = expanded ? 'Show fewer news' : 'Show all news';
+    }
+  }
+
+  function checkHeights() {
+    // show all to measure correctly
+    items.forEach(function(li) { li.style.display = ''; });
+    if (toggleBtn) toggleBtn.style.display = 'none';
+
+    const aboutHeight = aboutSection.getBoundingClientRect().height;
+    const newsHeight  = newsSection.getBoundingClientRect().height;
+    const threshold   = 24; // small slack in pixels
+
+    // Only collapse if News is noticeably taller than About Me
+    if (newsHeight > aboutHeight + threshold && items.length > maxVisible) {
+      if (!toggleBtn) {
+        toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.className = 'show-more-btn news-toggle-btn';
+        toggleBtn.addEventListener('click', function() {
+          expanded = !expanded;
+          applyCollapsedState();
+        });
+        // place button right under the list
+        newsList.insertAdjacentElement('afterend', toggleBtn);
+      }
+
+      toggleBtn.style.display = 'inline-block';
+      expanded = false;
+      applyCollapsedState();
+    } else {
+      // No need to collapse: show everything, hide button
+      items.forEach(function(li) { li.style.display = ''; });
+      if (toggleBtn) toggleBtn.style.display = 'none';
+    }
+  }
+
+  checkHeights();
+  window.addEventListener('resize', checkHeights);
+});
+
+
 </script>
 
 </body>
