@@ -765,13 +765,12 @@ document.addEventListener('DOMContentLoaded', function() {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 10px;
     box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-    margin: 0 0 20px;
+    margin: 0;   /* ← unified, clean spacing controlled by flex gap ONLY */
     break-inside: avoid;
-    display: inline-block;
+    display: block;
     width: 100%;
     padding: 18px 22px;
   }
-
   .cv-card h3 {
     margin-top: 0;
     margin-bottom: 10px;
