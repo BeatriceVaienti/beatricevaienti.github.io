@@ -12,8 +12,11 @@
   </header>
   <!-- Top navigation -->
   <nav aria-label="Primary" class="navigation">
-    <a href="#projects" id="navigation-work">Work</a>
     <a href="#bio" id="navigation-about">About</a>
+    <a href="#news" id="navigation-news">News</a>
+    <a href="#cv" id="navigation-cv">CV</a>
+    <a href="#projects" id="navigation-work">Publications</a>
+    <a href="#contact" id="navigation-contact">Contact</a>
   </nav>
   <main id="main" role="main" class="main-content">
 
@@ -568,16 +571,25 @@ document.addEventListener('DOMContentLoaded', function() {
     right:20px;
     z-index:10;
   }
+
   .navigation a{
     display:inline-block;
-    color:white;
-    padding:14px 16px;
+    margin:0 4px;
+    padding:8px 16px;
     text-decoration:none;
     text-transform:uppercase;
     font-weight:700;
+    font-size:12px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,0.7);
+    color:white;
+    background:rgba(255,255,255,0.05);
+    backdrop-filter:blur(6px);
   }
+
   .navigation a:hover{
-    color:#EF629F;
+    background:white;
+    color:#ED4264;  
   }
   .main-content{
     position:relative;
