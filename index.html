@@ -37,7 +37,7 @@
         <h2>News</h2>
         <ul class="news-list">
           <li>
-            <strong>17 September 2024 —</strong> I successfully completed my private PhD defense.
+            <strong>17 September 2025 -</strong> I successfully completed my private PhD defense.
           </li>
         </ul>
       </div>
@@ -769,6 +769,16 @@ document.addEventListener('DOMContentLoaded', function() {
   .cv-card-collapsible[aria-expanded="false"] .cv-card-body,
   .cv-card-collapsible.is-collapsed .cv-card-body {
     display: none;
+  }
+
+  @media (min-width: 900px) {
+    #bio.section,
+    #news.section {
+      display: inline-block;
+      vertical-align: top;
+      width: 50%;
+      box-sizing: border-box;
+    }
   }
 
 
