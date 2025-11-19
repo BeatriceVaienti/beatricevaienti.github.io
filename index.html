@@ -718,14 +718,7 @@ document.addEventListener('DOMContentLoaded', function() {
   .show-more-btn:hover {
     opacity: 0.9;
   }
-    /* CV layout: fixed card on the left, masonry on the right */
-  .cv-layout {
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
-    margin-top: 20px;
-    text-align: left;
-  }
+
   .news-list {
     list-style: none;
     margin: 0;
@@ -738,16 +731,30 @@ document.addEventListener('DOMContentLoaded', function() {
     margin-bottom: 12px;
   }
 
-  .cv-card--current {
-    flex: 0 0 320px;
+  /* Use grid instead of flex for the CV two-column layout */
+  .cv-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;       /* top-align both columns */
+    margin-top: 20px;
+    text-align: left;
   }
 
+  /* Make sure there is no extra vertical offset on either side */
+  .cv-card--current,
+  .cv-grid {
+    margin-top: 0;
+  }
+
+  /* Mobile: stack them again on small screens */
   @media (max-width: 900px) {
     .cv-layout {
-      flex-direction: column;
+      display: block;
     }
+
     .cv-card--current {
-      flex: 1 1 auto;
+      margin-bottom: 20px;
     }
   }
 
@@ -859,30 +866,5 @@ document.addEventListener('DOMContentLoaded', function() {
       padding-top: 140px;
     }
   }
-  /* Use grid instead of flex for the CV two-column layout */
-  .cv-layout {
-    display: grid;
-    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
-    gap: 20px;
-    align-items: start;       /* top-align both columns */
-    margin-top: 20px;
-    text-align: left;
-  }
 
-  /* Make sure there is no extra vertical offset on either side */
-  .cv-card--current,
-  .cv-grid {
-    margin-top: 0;
-  }
-
-  /* Mobile: stack them again on small screens */
-  @media (max-width: 900px) {
-    .cv-layout {
-      display: block;
-    }
-
-    .cv-card--current {
-      margin-bottom: 20px;
-    }
-  }
 </style>
