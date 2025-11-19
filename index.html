@@ -866,6 +866,38 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  /* ABOUT SECTION LAYOUT */
+  .about-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .about-photo {
+    width: 200px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  }
+
+  .about-text {
+    flex: 1;
+  }
+
+  /* Stack on small screens */
+  @media (max-width: 700px) {
+    .about-wrapper {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .about-photo {
+      margin: 0 auto 20px;
+      width: 60%;
+      max-width: 260px;
+    }
+  }
+
 
   @media (max-width: 640px){
     .main-content{
