@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', function() {
   #cv,
   #projects,
   #contact {
-    scroll-margin-top: 120px;  /* adjust if needed (depends on header+nav height) */
+    scroll-margin-top: 120px;  /* adapt if the banner is taller/thinner */
   }
 
   .navigation{
@@ -616,6 +616,27 @@ document.addEventListener('DOMContentLoaded', function() {
     border-radius:10px;
     box-shadow:0 4px 8px rgba(0,0,0,0.2);
   }
+    /* --- FIXED TOP COMMAND BANNER --- */
+  .section-nav {
+    position: fixed;
+    top: 0;                  /* start at the VERY top */
+    left: 0;
+    width: 100%;             /* full width */
+    z-index: 20000;          /* above everything */
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 14px 0;
+    background: rgba(255, 255, 255, 0.6);  /* subtle bar */
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(0,0,0,0.15);
+  }
+
+  /* Make sure buttons stay clickable and visible */
+  .section-nav .section-btn {
+    pointer-events: auto;
+  }
+
     .gallery {
     display: flex;
     flex-wrap: wrap;
@@ -819,7 +840,7 @@ document.addEventListener('DOMContentLoaded', function() {
       transform:none;
     }
     .main-content{
-      padding-top:320px;
+      padding-top: 80px; 
     }
   }
 </style>
