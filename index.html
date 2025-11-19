@@ -859,4 +859,30 @@ document.addEventListener('DOMContentLoaded', function() {
       padding-top: 140px;
     }
   }
+  /* Use grid instead of flex for the CV two-column layout */
+  .cv-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;       /* top-align both columns */
+    margin-top: 20px;
+    text-align: left;
+  }
+
+  /* Make sure there is no extra vertical offset on either side */
+  .cv-card--current,
+  .cv-grid {
+    margin-top: 0;
+  }
+
+  /* Mobile: stack them again on small screens */
+  @media (max-width: 900px) {
+    .cv-layout {
+      display: block;
+    }
+
+    .cv-card--current {
+      margin-bottom: 20px;
+    }
+  }
 </style>
