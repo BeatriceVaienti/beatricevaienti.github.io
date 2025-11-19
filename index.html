@@ -18,17 +18,17 @@
 
     <div class="about-news-wrapper">
       <section id="bio" class="section">
-        <div class="section-light about-wrapper">
-          <img src="img/photo_bv.jpeg" alt="Photo of Beatrice Vaienti" class="about-photo"/>
+        <div class="section-light about-card">
+          <div class="about-image"></div>
 
           <div class="about-text">
             <h2>About Me</h2>
             <p>I recently completed my PhD in Digital Humanities 
-            at the Digital Humanities Laboratory – DHLAB (EPFL).
-            I hold a MSc in Building Engineering and Architecture.
-            In my research I studied the Western cartographic depiction of Jerusalem 
-            between 1810 and 1925, focusing on errors and biases, 
-            and how they can be used to discover historical information.</p>
+              at the Digital Humanities Laboratory – DHLAB (EPFL).
+              I hold a MSc in Building Engineering and Architecture.
+              In my research I studied the Western cartographic depiction of Jerusalem 
+              between 1810 and 1925, focusing on errors and biases, 
+              and how they can be used to discover historical information.</p>
           </div>
         </div>
       </section>
@@ -873,28 +873,36 @@ document.addEventListener('DOMContentLoaded', function() {
     align-items: flex-start;
   }
 
-  .about-photo {
-    width: 200px;
-    height: auto;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  /* ABOUT ME card with banner image */
+  .about-card {
+    padding: 0; /* Remove default 40px padding so the image touches the edges */
+    overflow: hidden;
   }
 
+  /* The banner image area */
+  .about-image {
+    width: 100%;
+    height: 260px; /* adjust as needed */
+    background-image: url("img/photo_bv.jpg");
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px 10px 0 0; /* top corners rounded like a card */
+  }
+
+  /* Text area under the photo */
   .about-text {
-    flex: 1;
+    padding: 30px 40px 40px;
+    text-align: left;
   }
 
-  /* Stack on small screens */
+  /* Mobile: make image a bit shorter to keep proportions pleasant */
   @media (max-width: 700px) {
-    .about-wrapper {
-      flex-direction: column;
-      text-align: center;
+    .about-image {
+      height: 200px;
     }
 
-    .about-photo {
-      margin: 0 auto 20px;
-      width: 60%;
-      max-width: 260px;
+    .about-text {
+      padding: 24px 28px 32px;
     }
   }
 
