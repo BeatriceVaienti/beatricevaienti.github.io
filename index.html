@@ -561,32 +561,17 @@ document.addEventListener('DOMContentLoaded', function() {
   #cv,
   #projects,
   #contact {
-    scroll-margin-top: 120px;  /* adapt if the banner is taller/thinner */
+    scroll-margin-top: 150px;  /* adapt if the banner is taller/thinner */
   }
-
-
-  .section-nav a{
-    display:inline-block;
-    margin:0 4px;
-    padding:8px 16px;
-    text-decoration:none;
-    text-transform:uppercase;
-    font-weight:700;
-    font-size:12px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,0.7);
-    color:white;
-    background:rgba(255,255,255,0.05);
-    backdrop-filter:blur(6px);
-  }
+  
   .section-nav a:hover{
     background:white;
     color:#ED4264;  
   }
   .main-content{
-    position:relative;
-    z-index:100;
-    padding-top:500px;
+    position: relative;
+    z-index: 100;
+    padding-top: 150px;   /* ⬅ just below the taller banner */
   }
   .section{
     padding:20px;
@@ -600,20 +585,53 @@ document.addEventListener('DOMContentLoaded', function() {
     box-shadow:0 4px 8px rgba(0,0,0,0.2);
   }
     /* --- FIXED TOP COMMAND BANNER --- */
+/* --- FIXED TOP COMMAND BANNER --- */
   .section-nav {
     position: fixed;
-    top: 0;                  /* start at the VERY top */
+    top: 0;
     left: 0;
-    width: 100%;             /* full width */
-    z-index: 20000;          /* above everything */
+    width: 100%;
+    z-index: 20000;
     display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding: 14px 0;
-    background: rgba(255, 255, 255, 0.6);  /* subtle bar */
-    backdrop-filter: blur(8px);
+    align-items: center;
+    padding: 24px 32px;                 /* ⬅ bigger padding → taller banner */
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(0,0,0,0.15);
+    box-sizing: border-box;
   }
+
+  /* Name on the left */
+  .site-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+    white-space: nowrap;
+    margin-right: auto;                 /* ⬅ pushes buttons to the right */
+  }
+
+  /* Buttons on the right */
+  .section-btn {
+    display: inline-block;
+    margin: 0 4px;
+    padding: 8px 16px;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.7);
+    color: #333;
+    background: rgba(255,255,255,0.4);
+    backdrop-filter: blur(6px);
+  }
+
+  .section-btn:hover {
+    background: white;
+    color: #ED4264;
+  }
+
 
   /* Make sure buttons stay clickable and visible */
   .section-nav .section-btn {
@@ -815,15 +833,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
   @media (max-width: 640px){
-    .header h1{
-      font-size:48px;
-    }
-    .header p{
-      font-size:24px;
-      transform:none;
-    }
     .main-content{
-      padding-top: 80px; 
+      padding-top: 140px;
     }
   }
 </style>
