@@ -753,9 +753,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   /* Masonry-style columns for the collapsible cards */
   .cv-grid {
-    column-width: 280px;
-    column-gap: 20px;
-    padding-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1;                 /* take all horizontal space after Current Activities */
+    padding-top: 18px;       /* keeps top aligned with left card */
   }
 
   .cv-card {
@@ -801,28 +803,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
   /* Collapsible cards */
   .cv-card-collapsible {
-    padding: 0;
+    width: 100%;
+    padding: 0;  
   }
 
   .cv-card-toggle {
     width: 100%;
-    padding: 14px 18px;
+    padding: 18px 22px;
     border: none;
     background: transparent;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 1rem;
     cursor: pointer;
   }
+
 
   .cv-card-toggle-icon {
     font-size: 1.1rem;
   }
 
   .cv-card-body {
-    padding: 0 18px 16px;
+    padding: 0 22px 22px; 
   }
 
   .cv-card-collapsible[aria-expanded="false"] .cv-card-body,
