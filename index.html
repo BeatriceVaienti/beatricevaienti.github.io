@@ -7,8 +7,11 @@
   </title>
   <!-- Top navigation -->
   <div class="section-nav">
+  
     <div class="site-title">Beatrice Vaienti</div>
-    
+    <button id="regen-bg-btn" aria-label="Regenerate background">
+      ⟳
+    </button>
     <a href="#bio" class="section-btn">About</a>
     <a href="#news" class="section-btn">News</a>
     <a href="#cv" class="section-btn">CV</a>
@@ -437,6 +440,24 @@ function generateTriangulatedBackground() {
   canvas.height = height * dpr;
   canvas.style.width = width + 'px';
   canvas.style.height = height + 'px';
+  // --- CONFIG: tweak these to customize the triangulation ---
+  const TRI_CONFIG = {
+    // How many "cells" across the largest dimension: lower = bigger triangles
+    densityFactor: 10,        // was 12
+
+    // Min/max triangle size in pixels
+    minCell: 70,
+    maxCell: 220,
+
+    // How wiggly points are inside each cell (0 = perfect grid, 0.5 = very organic)
+    jitterFactor: 0.45,       // was 0.4
+
+    // How much neighboring triangles differ in color (0 = smooth gradient, 0.3 = noisy)
+    colorJitter: 0.16,
+
+    // How often to flip the diagonal (0 = all same orientation, 1 = totally random)
+    diagonalChaos: 0.7
+  };
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -480,7 +501,7 @@ function generateTriangulatedBackground() {
     let t = (tx + ty) / 2;
 
     // Small randomness so neighboring triangles differ slightly
-    t += (Math.random() - 0.5) * 0.15;
+    t += (Math.random() - 0.5) * TRI_CONFIG.colorJitter;
     t = Math.max(0, Math.min(1, t));
 
     const scaled = t * (palette.length - 1);
@@ -493,22 +514,28 @@ function generateTriangulatedBackground() {
 
   // Build a jittered grid of points
   const maxDim = Math.max(width, height);
-  const baseCellSize = maxDim / 12;        // roughly 10–15 cells across
-  const cellSize = Math.max(80, Math.min(200, baseCellSize));
-  const jitter = cellSize * 0.4;
+  const baseCellSize = maxDim / TRI_CONFIG.densityFactor;
+  const cellSize = Math.max(TRI_CONFIG.minCell, Math.min(TRI_CONFIG.maxCell, baseCellSize));
+  const jitter = cellSize * TRI_CONFIG.jitterFactor;
+  // Add some "bleed" around the viewport so triangles extend past edges
+  const bleedCells = 2; // how many extra cells outside each edge
 
-  const cols = Math.ceil(width / cellSize) + 2;
-  const rows = Math.ceil(height / cellSize) + 2;
+  const cols = Math.ceil(width / cellSize) + bleedCells * 2;
+  const rows = Math.ceil(height / cellSize) + bleedCells * 2;
+
+  const startX = -bleedCells * cellSize;
+  const startY = -bleedCells * cellSize;
 
   const points = [];
   for (let j = 0; j < rows; j++) {
     points[j] = [];
     for (let i = 0; i < cols; i++) {
-      const px = i * cellSize + (Math.random() - 0.5) * jitter;
-      const py = j * cellSize + (Math.random() - 0.5) * jitter;
+      const px = startX + i * cellSize + (Math.random() - 0.5) * jitter;
+      const py = startY + j * cellSize + (Math.random() - 0.5) * jitter;
       points[j][i] = { x: px, y: py };
     }
   }
+
 
   // Draw triangles by splitting each cell into two
   for (let j = 0; j < rows - 1; j++) {
@@ -519,7 +546,8 @@ function generateTriangulatedBackground() {
       const p4 = points[j + 1][i + 1];
 
       // Randomly choose the diagonal to create a more organic look
-      const useDiag1 = Math.random() < 0.5;
+      const useDiag1 = Math.random() < TRI_CONFIG.diagonalChaos;
+
 
       if (useDiag1) {
         // Triangle 1: p1, p2, p4
@@ -816,7 +844,11 @@ document.addEventListener('DOMContentLoaded', function() {
   checkHeights();
   window.addEventListener('resize', checkHeights);
 });
-
+window.addEventListener('DOMContentLoaded', function() {
+  const btn = document.getElementById('regen-bg-btn');
+  if (!btn) return;
+  btn.addEventListener('click', generateTriangulatedBackground);
+});
 
 </script>
 
@@ -824,6 +856,28 @@ document.addEventListener('DOMContentLoaded', function() {
 <link href="https://fonts.googleapis.com/css2?family=Bungee+Shade&display=swap" rel="stylesheet">
 
 <style>* {
+    #regen-bg-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 30000;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #regen-bg-btn:hover {
+    background: #ffffff;
+  }
+
     /* Fullscreen triangulated background canvas */
   #bg-triangles {
     position: fixed;
@@ -833,9 +887,10 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   /* Make sure content sits above */
-  .main-content {
+  .main-content{
     position: relative;
     z-index: 100;
+    padding-top: 150px;   /* ⬅ just below the taller banner */
   }
   .section-nav {
     z-index: 20000;
@@ -897,11 +952,7 @@ document.addEventListener('DOMContentLoaded', function() {
     background:white;
     color:#ED4264;  
   }
-  .main-content{
-    position: relative;
-    z-index: 100;
-    padding-top: 150px;   /* ⬅ just below the taller banner */
-  }
+
   .section{
     padding:20px;
     text-align:center;
@@ -1012,7 +1063,9 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color:#ED4264;
     color:white;
     padding:20px;
+    position:relative;
     text-align:center;
+    z-index: 100;
   }
     .show-more-btn {
     margin-top: 16px;
