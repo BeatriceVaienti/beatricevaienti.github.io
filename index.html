@@ -751,15 +751,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  /* Masonry-style columns for the collapsible cards */
+    /* Masonry-style columns for the collapsible cards */
   .cv-grid {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    flex: 1;                 /* take all horizontal space after Current Activities */
-    padding-top: 18px;       /* keeps top aligned with left card */
+    flex: 1;
+    /* remove extra vertical offset so top aligns with Current Activities */
+    padding-top: 0;
+    margin-top: 0;
   }
-
   .cv-card {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 10px;
@@ -816,18 +817,18 @@ document.addEventListener('DOMContentLoaded', function() {
     justify-content: space-between;
     align-items: center;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.95rem;
     cursor: pointer;
   }
 
+  .cv-card-body {
+    padding: 0 22px 22px;
+  }
 
   .cv-card-toggle-icon {
     font-size: 1.1rem;
   }
 
-  .cv-card-body {
-    padding: 0 22px 22px; 
-  }
 
   .cv-card-collapsible[aria-expanded="false"] .cv-card-body,
   .cv-card-collapsible.is-collapsed .cv-card-body {
