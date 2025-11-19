@@ -4,20 +4,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Beatrice Vaienti - PhD Student @ DHLAB, EPFL
   </title>
-  <header role="banner" class="header">
-    <h1 id="i23e">Hello, I'm Beatrice!
-    </h1>
-    <p id="iqrjr"> ...
-    </p>
-  </header>
   <!-- Top navigation -->
-  <nav aria-label="Primary" class="navigation">
-    <a href="#bio" id="navigation-about">About</a>
-    <a href="#news" id="navigation-news">News</a>
-    <a href="#cv" id="navigation-cv">CV</a>
-    <a href="#projects" id="navigation-work">Publications</a>
-    <a href="#contact" id="navigation-contact">Contact</a>
-  </nav>
+  <div class="section-nav">
+    <div class="site-title">Beatrice Vaienti</div>
+    
+    <a href="#bio" class="section-btn">About</a>
+    <a href="#news" class="section-btn">News</a>
+    <a href="#cv" class="section-btn">CV</a>
+    <a href="#projects" class="section-btn">Publications</a>
+    <a href="#contact" class="section-btn">Contact</a>
+  </div>
   <main id="main" role="main" class="main-content">
 
     <div class="about-news-wrapper">
@@ -568,21 +564,8 @@ document.addEventListener('DOMContentLoaded', function() {
     scroll-margin-top: 120px;  /* adapt if the banner is taller/thinner */
   }
 
-  .navigation{
-    background: rgba(0,0,0,0.15);  /* light translucent backdrop so text stays readable */
-    color:white;
-    overflow:hidden;
-    padding:10px 0;
-    margin-right:50px;
-    text-align:right;
-    position:fixed;
-    width:100%;
-    top:30px;
-    right:20px;
-    z-index:10000;                  /* keep it above everything */
-    backdrop-filter: blur(6px);     /* optional: nice glass effect */
-  }
-  .navigation a{
+
+  .section-nav a{
     display:inline-block;
     margin:0 4px;
     padding:8px 16px;
@@ -596,7 +579,7 @@ document.addEventListener('DOMContentLoaded', function() {
     background:rgba(255,255,255,0.05);
     backdrop-filter:blur(6px);
   }
-  .navigation a:hover{
+  .section-nav a:hover{
     background:white;
     color:#ED4264;  
   }
