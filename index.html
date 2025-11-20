@@ -9,9 +9,37 @@
   <div class="section-nav">
   
     <div class="site-title">Beatrice Vaienti</div>
-    <button id="regen-bg-btn" aria-label="Regenerate background">
-      ⟳
-    </button>
+    <div id="bg-controls">
+      <button id="regen-bg-btn" aria-label="Regenerate background">
+        ⟳
+      </button>
+
+      <div id="bg-settings">
+        <div class="bg-settings-row">
+          <label>Color 1 <input type="color" id="tri-color-1" value="#FFEDBC"></label>
+          <label>Color 2 <input type="color" id="tri-color-2" value="#FB5FB0"></label>
+        </div>
+        <div class="bg-settings-row">
+          <label>Color 3 <input type="color" id="tri-color-3" value="#5FFBF1"></label>
+          <label>Color 4 <input type="color" id="tri-color-4" value="#ED4264"></label>
+        </div>
+
+        <div class="bg-settings-row">
+          <label>
+            Density
+            <input type="range" id="tri-density" min="6" max="20" step="1" value="10">
+          </label>
+        </div>
+
+        <div class="bg-settings-row">
+          <label>
+            Chaos
+            <input type="range" id="tri-chaos" min="0" max="1" step="0.05" value="0.7">
+          </label>
+        </div>
+      </div>
+    </div>
+
     <a href="#bio" class="section-btn">About</a>
     <a href="#news" class="section-btn">News</a>
     <a href="#cv" class="section-btn">CV</a>
@@ -422,12 +450,24 @@
     </p>
   </footer>
   <!-- No JS needed anymore; removed JSON fetch -->
-<script>
 
+  <script>
 /**
  * Triangulated background generator using your gradient colors.
  * Inspired by Trianglify-style low-poly backgrounds.
  */
+
+// Global config used by the background generator
+const TRI_CONFIG = {
+  palette: ["#FFEDBC", "#FB5FB0", "#5FFBF1", "#ED4264"],
+  densityFactor: 10,   // number of cells across the large dimension (bigger = smaller triangles)
+  minCell: 70,
+  maxCell: 220,
+  jitterFactor: 0.45,  // 0 = perfect grid, ~0.5 = very organic
+  colorJitter: 0.16,   // how much neighboring triangles differ in color
+  diagonalChaos: 0.7   // 0 = uniform diagonals, 1 = very random mesh
+};
+
 function generateTriangulatedBackground() {
   const canvas = document.getElementById('bg-triangles');
   if (!canvas) return;
@@ -440,24 +480,6 @@ function generateTriangulatedBackground() {
   canvas.height = height * dpr;
   canvas.style.width = width + 'px';
   canvas.style.height = height + 'px';
-  // --- CONFIG: tweak these to customize the triangulation ---
-  const TRI_CONFIG = {
-    // How many "cells" across the largest dimension: lower = bigger triangles
-    densityFactor: 10,        // was 12
-
-    // Min/max triangle size in pixels
-    minCell: 70,
-    maxCell: 220,
-
-    // How wiggly points are inside each cell (0 = perfect grid, 0.5 = very organic)
-    jitterFactor: 0.45,       // was 0.4
-
-    // How much neighboring triangles differ in color (0 = smooth gradient, 0.3 = noisy)
-    colorJitter: 0.16,
-
-    // How often to flip the diagonal (0 = all same orientation, 1 = totally random)
-    diagonalChaos: 0.7
-  };
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -465,13 +487,8 @@ function generateTriangulatedBackground() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, width, height);
 
-  // Your palette (same as old gradient)
-  const base1 = "#FFEDBC";
-  const base2 = "#ED4264";
-  const c3   = "#FB5FB0";
-  const c4   = "#5FFBF1";
-
-  const palette = [base1, c3, c4, base2];
+  // Use global palette
+  const palette = TRI_CONFIG.palette;
 
   // Helper: hex -> {r,g,b}
   function hexToRgb(hex) {
@@ -517,8 +534,9 @@ function generateTriangulatedBackground() {
   const baseCellSize = maxDim / TRI_CONFIG.densityFactor;
   const cellSize = Math.max(TRI_CONFIG.minCell, Math.min(TRI_CONFIG.maxCell, baseCellSize));
   const jitter = cellSize * TRI_CONFIG.jitterFactor;
+
   // Add some "bleed" around the viewport so triangles extend past edges
-  const bleedCells = 2; // how many extra cells outside each edge
+  const bleedCells = 2; // extra cells outside each edge
 
   const cols = Math.ceil(width / cellSize) + bleedCells * 2;
   const rows = Math.ceil(height / cellSize) + bleedCells * 2;
@@ -536,7 +554,6 @@ function generateTriangulatedBackground() {
     }
   }
 
-
   // Draw triangles by splitting each cell into two
   for (let j = 0; j < rows - 1; j++) {
     for (let i = 0; i < cols - 1; i++) {
@@ -547,7 +564,6 @@ function generateTriangulatedBackground() {
 
       // Randomly choose the diagonal to create a more organic look
       const useDiag1 = Math.random() < TRI_CONFIG.diagonalChaos;
-
 
       if (useDiag1) {
         // Triangle 1: p1, p2, p4
@@ -610,247 +626,107 @@ function debounce(fn, delay) {
 window.addEventListener('load', generateTriangulatedBackground);
 window.addEventListener('resize', debounce(generateTriangulatedBackground, 200));
 
-/* === existing Publications "Show all" logic, unchanged === */
+/* === Publications "Show all" logic + controls === */
 document.addEventListener('DOMContentLoaded', function() {
+  // --- Publications show more/less ---
   const gallery = document.querySelector('.gallery');
-  if (!gallery) return;
-
-  // Cards are anchors wrapping articles OR plain articles
-  const cards = Array.from(gallery.children).filter(function(el) {
-    return el.matches('.gallery-item-link, .gallery-item');
-  });
-
-  if (cards.length === 0) return;
-
-  let expanded = false;
-  let toggleBtn = null;
-
-  function updateVisibility() {
-    if (expanded) {
-      cards.forEach(function(el) { el.style.display = ''; });
-      if (toggleBtn) {
-        toggleBtn.textContent = 'Show fewer publications';
-      }
-      return;
-    }
-
-    const firstCard = cards[0];
-    const cardRect = firstCard.getBoundingClientRect();
-    const cardWidth = cardRect.width || 1;
-    const galleryWidth = gallery.clientWidth || cardWidth;
-
-    // How many cards per row fit?
-    var perRow = Math.max(1, Math.floor(galleryWidth / cardWidth));
-    var maxVisible = perRow * 2; // two rows
-
-    cards.forEach(function(el, idx) {
-      el.style.display = (idx < maxVisible) ? '' : 'none';
+  if (gallery) {
+    const cards = Array.from(gallery.children).filter(function(el) {
+      return el.matches('.gallery-item-link, .gallery-item');
     });
 
-    if (toggleBtn) {
-      if (cards.length <= maxVisible) {
-        toggleBtn.style.display = 'none';
-      } else {
-        toggleBtn.style.display = 'inline-block';
-        toggleBtn.textContent = 'Show all publications';
-      }
-    }
-  }
+    if (cards.length > 0) {
+      let expanded = false;
+      let toggleBtn = document.createElement('button');
+      toggleBtn.className = 'show-more-btn';
+      toggleBtn.type = 'button';
+      toggleBtn.textContent = 'Show all publications';
 
-  // Create the button
-  toggleBtn = document.createElement('button');
-  toggleBtn.className = 'show-more-btn';
-  toggleBtn.type = 'button';
-  toggleBtn.textContent = 'Show all publications';
+      function updateVisibility() {
+        if (expanded) {
+          cards.forEach(function(el) { el.style.display = ''; });
+          toggleBtn.textContent = 'Show fewer publications';
+          return;
+        }
 
-  toggleBtn.addEventListener('click', function() {
-    expanded = !expanded;
-    updateVisibility();
-  });
+        const firstCard = cards[0];
+        const cardRect = firstCard.getBoundingClientRect();
+        const cardWidth = cardRect.width || 1;
+        const galleryWidth = gallery.clientWidth || cardWidth;
 
-  // Insert after the gallery
-  gallery.insertAdjacentElement('afterend', toggleBtn);
+        var perRow = Math.max(1, Math.floor(galleryWidth / cardWidth));
+        var maxVisible = perRow * 2; // two rows
 
-  // Update on resize (only matters when not expanded)
-  window.addEventListener('resize', function() {
-    if (!expanded) {
-      updateVisibility();
-    }
-  });
-
-  // Initial layout
-  updateVisibility();
-});
-document.addEventListener('DOMContentLoaded', function() {
-  const gallery = document.querySelector('.gallery');
-  if (!gallery) return;
-
-  // Cards are anchors wrapping articles OR plain articles
-  const cards = Array.from(gallery.children).filter(function(el) {
-    return el.matches('.gallery-item-link, .gallery-item');
-  });
-
-  if (cards.length === 0) return;
-
-  let expanded = false;
-  let toggleBtn = null;
-
-  function updateVisibility() {
-    if (expanded) {
-      cards.forEach(function(el) { el.style.display = ''; });
-      if (toggleBtn) {
-        toggleBtn.textContent = 'Show fewer publications';
-      }
-      return;
-    }
-
-    const firstCard = cards[0];
-    const cardRect = firstCard.getBoundingClientRect();
-    const cardWidth = cardRect.width || 1;
-    const galleryWidth = gallery.clientWidth || cardWidth;
-
-    // How many cards per row fit?
-    var perRow = Math.max(1, Math.floor(galleryWidth / cardWidth));
-    var maxVisible = perRow * 2; // two rows
-
-    cards.forEach(function(el, idx) {
-      el.style.display = (idx < maxVisible) ? '' : 'none';
-    });
-
-    if (toggleBtn) {
-      if (cards.length <= maxVisible) {
-        toggleBtn.style.display = 'none';
-      } else {
-        toggleBtn.style.display = 'inline-block';
-        toggleBtn.textContent = 'Show all publications';
-      }
-    }
-  }
-
-  // Create the button
-  toggleBtn = document.createElement('button');
-  toggleBtn.className = 'show-more-btn';
-  toggleBtn.type = 'button';
-  toggleBtn.textContent = 'Show all publications';
-
-  toggleBtn.addEventListener('click', function() {
-    expanded = !expanded;
-    updateVisibility();
-  });
-
-  // Insert after the gallery
-  gallery.insertAdjacentElement('afterend', toggleBtn);
-
-  // Update on resize (only matters when not expanded)
-  window.addEventListener('resize', function() {
-    if (!expanded) {
-      updateVisibility();
-    }
-  });
-
-  // Initial layout
-  updateVisibility();
-});
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const collapsibleCards = document.querySelectorAll('.cv-card-collapsible');
-
-  collapsibleCards.forEach(function(card) {
-    const toggle = card.querySelector('.cv-card-toggle');
-    const body = card.querySelector('.cv-card-body');
-    if (!toggle || !body) return;
-
-    // Initial state: collapsed
-    card.classList.add('is-collapsed');
-    card.setAttribute('aria-expanded', 'false');
-
-    toggle.addEventListener('click', function() {
-      const isCollapsed = card.classList.toggle('is-collapsed');
-      const expanded = !isCollapsed;
-      card.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-
-      // Simple icon change +/–
-      const icon = toggle.querySelector('.cv-card-toggle-icon');
-      if (icon) icon.textContent = expanded ? '−' : '+';
-
-      // Show/hide body
-      if (expanded) {
-        body.style.display = 'block';
-      } else {
-        body.style.display = 'none';
-      }
-    });
-  });
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-  const aboutSection = document.querySelector('#bio .section-light');
-  const newsSection  = document.querySelector('#news .section-light');
-  const newsList     = document.querySelector('#news .news-list');
-
-  if (!aboutSection || !newsSection || !newsList) return;
-
-  const items = Array.from(newsList.querySelectorAll('li'));
-  if (items.length <= 1) return; // nothing to collapse
-
-  let expanded = false;
-  let toggleBtn = null;
-  const maxVisible = 3; // how many newest items to show when collapsed
-
-  function applyCollapsedState() {
-    items.forEach(function(li, index) {
-      li.style.display = (expanded || index < maxVisible) ? '' : 'none';
-    });
-
-    if (toggleBtn) {
-      toggleBtn.textContent = expanded ? 'Show fewer news' : 'Show all news';
-    }
-  }
-
-  function checkHeights() {
-    // show all to measure correctly
-    items.forEach(function(li) { li.style.display = ''; });
-    if (toggleBtn) toggleBtn.style.display = 'none';
-
-    const aboutHeight = aboutSection.getBoundingClientRect().height;
-    const newsHeight  = newsSection.getBoundingClientRect().height;
-    const threshold   = 24; // small slack in pixels
-
-    // Only collapse if News is noticeably taller than About Me
-    if (newsHeight > aboutHeight + threshold && items.length > maxVisible) {
-      if (!toggleBtn) {
-        toggleBtn = document.createElement('button');
-        toggleBtn.type = 'button';
-        toggleBtn.className = 'show-more-btn news-toggle-btn';
-        toggleBtn.addEventListener('click', function() {
-          expanded = !expanded;
-          applyCollapsedState();
+        cards.forEach(function(el, idx) {
+          el.style.display = (idx < maxVisible) ? '' : 'none';
         });
-        // place button right under the list
-        newsList.insertAdjacentElement('afterend', toggleBtn);
+
+        if (cards.length <= maxVisible) {
+          toggleBtn.style.display = 'none';
+        } else {
+          toggleBtn.style.display = 'inline-block';
+          toggleBtn.textContent = 'Show all publications';
+        }
       }
 
-      toggleBtn.style.display = 'inline-block';
-      expanded = false;
-      applyCollapsedState();
-    } else {
-      // No need to collapse: show everything, hide button
-      items.forEach(function(li) { li.style.display = ''; });
-      if (toggleBtn) toggleBtn.style.display = 'none';
+      toggleBtn.addEventListener('click', function() {
+        expanded = !expanded;
+        updateVisibility();
+      });
+
+      gallery.insertAdjacentElement('afterend', toggleBtn);
+
+      window.addEventListener('resize', function() {
+        if (!expanded) updateVisibility();
+      });
+
+      updateVisibility();
     }
   }
 
-  checkHeights();
-  window.addEventListener('resize', checkHeights);
-});
-window.addEventListener('DOMContentLoaded', function() {
+  // --- Regen button click: re-generate background ---
   const btn = document.getElementById('regen-bg-btn');
-  if (!btn) return;
-  btn.addEventListener('click', generateTriangulatedBackground);
-});
+  if (btn) {
+    btn.addEventListener('click', generateTriangulatedBackground);
+  }
 
+  // --- Color + slider controls for triangulation ---
+  const colorInputs = [
+    document.getElementById('tri-color-1'),
+    document.getElementById('tri-color-2'),
+    document.getElementById('tri-color-3'),
+    document.getElementById('tri-color-4')
+  ];
+
+  colorInputs.forEach(function(input, index) {
+    if (!input) return;
+    input.addEventListener('input', function() {
+      TRI_CONFIG.palette[index] = input.value;
+      generateTriangulatedBackground();
+    });
+  });
+
+  // Density slider: 6–20
+  const densityInput = document.getElementById('tri-density');
+  if (densityInput) {
+    densityInput.addEventListener('input', function() {
+      TRI_CONFIG.densityFactor = parseFloat(densityInput.value);
+      generateTriangulatedBackground();
+    });
+  }
+
+  // Chaos slider: 0–1
+  const chaosInput = document.getElementById('tri-chaos');
+  if (chaosInput) {
+    chaosInput.addEventListener('input', function() {
+      TRI_CONFIG.diagonalChaos = parseFloat(chaosInput.value);
+      generateTriangulatedBackground();
+    });
+  }
+});
 </script>
+
+
 
 </body>
 <link href="https://fonts.googleapis.com/css2?family=Bungee+Shade&display=swap" rel="stylesheet">
@@ -1272,6 +1148,81 @@ window.addEventListener('DOMContentLoaded', function() {
     .main-content{
       padding-top: 140px;
     }
+  }
+  /* Wrapper for the regen button + settings panel */
+  #bg-controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 30000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  /* The ⟳ button itself */
+  #regen-bg-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #regen-bg-btn:hover {
+    background: #ffffff;
+  }
+
+  /* The floating settings card */
+  #bg-settings {
+    display: none; /* shown on hover/focus */
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    font-size: 12px;
+    min-width: 220px;
+  }
+
+  .bg-settings-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  #bg-settings label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    width: 100%;
+  }
+
+  /* Color inputs a bit nicer */
+  #bg-settings input[type="color"] {
+    width: 32px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  /* Sliders full width */
+  #bg-settings input[type="range"] {
+    flex: 1;
+  }
+
+  /* Show settings on hover or keyboard focus within */
+  #bg-controls:hover #bg-settings,
+  #bg-controls:focus-within #bg-settings {
+    display: block;
   }
 
 </style>
