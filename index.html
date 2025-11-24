@@ -9,36 +9,7 @@
   <div class="section-nav">
   
     <div class="site-title">Beatrice Vaienti</div>
-    <div id="bg-controls">
-      <button id="regen-bg-btn" aria-label="Regenerate background">
-        ⟳
-      </button>
-
-      <div id="bg-settings">
-        <div class="bg-settings-row">
-          <label>Color 1 <input type="color" id="tri-color-1" value="#FFEDBC"></label>
-          <label>Color 2 <input type="color" id="tri-color-2" value="#FB5FB0"></label>
-        </div>
-        <div class="bg-settings-row">
-          <label>Color 3 <input type="color" id="tri-color-3" value="#5FFBF1"></label>
-          <label>Color 4 <input type="color" id="tri-color-4" value="#ED4264"></label>
-        </div>
-
-        <div class="bg-settings-row">
-          <label>
-            Density
-            <input type="range" id="tri-density" min="6" max="20" step="1" value="10">
-          </label>
-        </div>
-
-        <div class="bg-settings-row">
-          <label>
-            Chaos
-            <input type="range" id="tri-chaos" min="0" max="1" step="0.05" value="0.7">
-          </label>
-        </div>
-      </div>
-    </div>
+    
 
     <a href="#bio" class="section-btn">About</a>
     <a href="#news" class="section-btn">News</a>
@@ -438,9 +409,28 @@
     </section>
   </main>
   <footer role="contentinfo" class="footer">
-    <p>© 2025 Beatrice Vaienti. All rights reserved.
-    </p>
+    <p>© 2025 Beatrice Vaienti. All rights reserved.</p>
+
+    <div id="bg-controls" aria-label="Background customization panel">
+      <span class="bg-controls-title">Change background!</span>
+
+      <div class="bg-color-row">
+        <div class="bg-color-dots">
+          <input type="color" id="tri-color-1" value="#FFEDBC" class="bg-color-dot" aria-label="Background color 1">
+          <input type="color" id="tri-color-2" value="#FB5FB0" class="bg-color-dot" aria-label="Background color 2">
+          <input type="color" id="tri-color-3" value="#5FFBF1" class="bg-color-dot" aria-label="Background color 3">
+          <input type="color" id="tri-color-4" value="#ED4264" class="bg-color-dot" aria-label="Background color 4">
+        </div>
+
+        <button id="regen-bg-btn" class="bg-regen-btn" aria-label="Regenerate background">
+          ⟳
+        </button>
+      </div>
+
+    </div>
   </footer>
+
+
   <!-- No JS needed anymore; removed JSON fetch -->
 
   <script>
@@ -747,27 +737,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!input) return;
     input.addEventListener('input', function() {
       TRI_CONFIG.palette[index] = input.value;
-      generateTriangulatedBackground();
+      // no immediate redraw: user will press the refresh button
     });
   });
 
-  // Density slider: 6–20
-  const densityInput = document.getElementById('tri-density');
-  if (densityInput) {
-    densityInput.addEventListener('input', function() {
-      TRI_CONFIG.densityFactor = parseFloat(densityInput.value);
-      generateTriangulatedBackground();
-    });
-  }
 
-  // Chaos slider: 0–1
-  const chaosInput = document.getElementById('tri-chaos');
-  if (chaosInput) {
-    chaosInput.addEventListener('input', function() {
-      TRI_CONFIG.diagonalChaos = parseFloat(chaosInput.value);
-      generateTriangulatedBackground();
-    });
-  }
+
 });
 </script>
 
@@ -776,30 +751,14 @@ document.addEventListener('DOMContentLoaded', function() {
 </body>
 <link href="https://fonts.googleapis.com/css2?family=Bungee+Shade&display=swap" rel="stylesheet">
 
-<style>* {
-    #regen-bg-btn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 30000;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+<style>/* Global box-sizing */
+  *,
+  *:before,
+  *:after {
+    box-sizing: border-box;
   }
 
-  #regen-bg-btn:hover {
-    background: #ffffff;
-  }
-
-    /* Fullscreen triangulated background canvas */
+  /* Fullscreen triangulated background canvas */
   #bg-triangles {
     position: fixed;
     inset: 0;
@@ -808,17 +767,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   /* Make sure content sits above */
-  .main-content{
+  .main-content {
     position: relative;
     z-index: 100;
-    padding-top: 150px;   /* ⬅ just below the taller banner */
+    padding-top: 150px;   /* just below the taller banner */
   }
+
   .section-nav {
     z-index: 20000;
   }
 
-  box-sizing: border-box;
-  }
   body {
     margin: 0;
   }
@@ -983,19 +941,87 @@ document.addEventListener('DOMContentLoaded', function() {
   .gallery-item p:first-of-type {
     font-weight: 700;
   }
+/* Footer with frosted design *//* Footer layout (you probably already have something like this) */
+/* Footer */
   .footer {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
     border-top: 1px solid rgba(0,0,0,0.15);
-    
-    position: relative;       /* normal flow */
+    position: relative;
     width: 100%;
-    
-    padding: 20px 32px;
-    text-align: center;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
     color: #333;
-    z-index: 20000;
   }
+
+  /* Right-side controls */
+  #bg-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    font-size: 0.85rem;
+  }
+
+  .bg-controls-title {
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  /* Row of dots + button */
+  .bg-color-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Color dots */
+  .bg-color-dot {
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.9);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.45);
+  }
+
+  .bg-color-dot::-webkit-color-swatch {
+    border-radius: 50%;
+    border: none;
+  }
+  .bg-color-dot::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  /* Refresh button */
+  .bg-regen-btn {
+    width: 28px;
+    margin-left: 6px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bg-regen-btn:hover {
+    background: #ffffff;
+  }
+
+
     .show-more-btn {
     margin-top: 16px;
     padding: 8px 18px;
@@ -1202,80 +1228,6 @@ document.addEventListener('DOMContentLoaded', function() {
       padding-top: 140px;
     }
   }
-  /* Wrapper for the regen button + settings panel */
-  #bg-controls {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 30000;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-  }
-
-  /* The ⟳ button itself */
-  #regen-bg-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  #regen-bg-btn:hover {
-    background: #ffffff;
-  }
-
-  /* The floating settings card */
-  #bg-settings {
-    display: none; /* shown on hover/focus */
-    margin-top: 8px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    font-size: 12px;
-    min-width: 220px;
-  }
-
-  .bg-settings-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 6px;
-  }
-
-  #bg-settings label {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px;
-    width: 100%;
-  }
-
-  /* Color inputs a bit nicer */
-  #bg-settings input[type="color"] {
-    width: 32px;
-    height: 22px;
-    padding: 0;
-    border: none;
-    background: transparent;
-  }
-
-  /* Sliders full width */
-  #bg-settings input[type="range"] {
-    flex: 1;
-  }
-
-  /* Show settings on hover or keyboard focus within */
-  #bg-controls:hover #bg-settings,
-  #bg-controls:focus-within #bg-settings {
-    display: block;
-  }
+  
 
 </style>
