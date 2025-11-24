@@ -444,6 +444,26 @@
   <!-- No JS needed anymore; removed JSON fetch -->
 
   <script>
+
+function equalizePublicationHeights() {
+  const cards = document.querySelectorAll('.gallery-item');
+  if (!cards.length) return;
+
+  // Reset heights first (important when resizing)
+  cards.forEach(function(card) {
+    card.style.height = 'auto';
+  });
+
+  let maxHeight = 0;
+  cards.forEach(function(card) {
+    const h = card.offsetHeight;
+    if (h > maxHeight) maxHeight = h;
+  });
+
+  cards.forEach(function(card) {
+    card.style.height = maxHeight + 'px';
+  });
+}
 /**
  * Triangulated background generator using your gradient colors.
  * Inspired by Trianglify-style low-poly backgrounds.
@@ -451,7 +471,7 @@
 
 // Global config used by the background generator
 const TRI_CONFIG = {
-  palette: ["#FFEDBC", "#FB5FB0", "#5FFBF1", "#ED4264"],
+  palette: ["#FCF9EA", "#BADFDB", "#FAE3D9", "#ED4264"],
   densityFactor: 10,   // number of cells across the large dimension (bigger = smaller triangles)
   minCell: 70,
   maxCell: 220,
@@ -654,6 +674,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (expanded) {
           cards.forEach(function(el) { el.style.display = ''; });
           toggleBtn.textContent = 'Show fewer publications';
+          // re-equalize after expanding
+          equalizePublicationHeights();
           return;
         }
 
@@ -675,6 +697,9 @@ document.addEventListener('DOMContentLoaded', function() {
           toggleBtn.style.display = 'inline-block';
           toggleBtn.textContent = 'Show all publications';
         }
+
+        // re-equalize after hiding/showing
+        equalizePublicationHeights();
       }
 
       toggleBtn.addEventListener('click', function() {
@@ -686,11 +711,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
       window.addEventListener('resize', function() {
         if (!expanded) updateVisibility();
+        // also adjust heights on resize
+        equalizePublicationHeights();
       });
 
+      // initial layout
       updateVisibility();
+
+      // re-equalize when images load (important for lazy images)
+      const imgs = gallery.querySelectorAll('.gallery-image');
+      imgs.forEach(function(img) {
+        img.addEventListener('load', function() {
+          equalizePublicationHeights();
+        });
+      });
     }
   }
+
 
   // --- Regen button click: re-generate background ---
   const btn = document.getElementById('regen-bg-btn');
@@ -850,7 +887,6 @@ document.addEventListener('DOMContentLoaded', function() {
     margin: 20px 10px;
     padding: 40px;
 
-    border: 1px solid rgba(255, 255, 255, 0.4);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
   }
     /* --- FIXED TOP COMMAND BANNER --- */
@@ -866,7 +902,6 @@ document.addEventListener('DOMContentLoaded', function() {
     padding: 24px 32px;                 /* ⬅ bigger padding → taller banner */
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0,0,0,0.15);
     box-sizing: border-box;
   }
 
@@ -1083,7 +1118,8 @@ document.addEventListener('DOMContentLoaded', function() {
     align-items: center;
     font-weight: 600;
     font-size: 0.95rem;
-    cursor: pointer;
+    cursor: default;
+    pointer-events: none;
   }
 
   .cv-card-body {
@@ -1094,11 +1130,6 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 1.1rem;
   }
 
-
-  .cv-card-collapsible[aria-expanded="false"] .cv-card-body,
-  .cv-card-collapsible.is-collapsed .cv-card-body {
-    display: none;
-  }
   
   /* Wrapper for a two-column layout */
   .about-news-wrapper {
