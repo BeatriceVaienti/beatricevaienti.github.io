@@ -232,7 +232,6 @@
             <article class="cv-card cv-card-collapsible">
               <button class="cv-card-toggle" type="button">
                 <span>Education</span>
-                <span class="cv-card-toggle-icon">+</span>
               </button>
               <div class="cv-card-body">
                 <ul class="cv-list">
@@ -251,7 +250,6 @@
             <article class="cv-card cv-card-collapsible">
               <button class="cv-card-toggle" type="button">
                 <span>Work Experience</span>
-                <span class="cv-card-toggle-icon">+</span>
               </button>
               <div class="cv-card-body">
                 <ul class="cv-list">
@@ -278,7 +276,6 @@
             <article class="cv-card cv-card-collapsible">
               <button class="cv-card-toggle" type="button">
                 <span>Scholarships & Fellowships</span>
-                <span class="cv-card-toggle-icon">+</span>
               </button>
               <div class="cv-card-body">
                 <ul class="cv-list">
@@ -304,7 +301,6 @@
             <article class="cv-card cv-card-collapsible">
               <button class="cv-card-toggle" type="button">
                 <span>Teaching Experience</span>
-                <span class="cv-card-toggle-icon">+</span>
               </button>
               <div class="cv-card-body">
                 <ul class="cv-list">
@@ -336,7 +332,6 @@
             <article class="cv-card cv-card-collapsible">
               <button class="cv-card-toggle" type="button">
                 <span>Languages & Software</span>
-                <span class="cv-card-toggle-icon">+</span>
               </button>
               <div class="cv-card-body">
                 <p><strong>Languages</strong><br/>
@@ -352,7 +347,6 @@
             <article class="cv-card cv-card-collapsible">
               <button class="cv-card-toggle" type="button">
                 <span>Exhibitions</span>
-                <span class="cv-card-toggle-icon">+</span>
               </button>
               <div class="cv-card-body">
                 <ul class="cv-list">
@@ -372,7 +366,6 @@
             <article class="cv-card cv-card-collapsible">
               <button class="cv-card-toggle" type="button">
                 <span>Talks</span>
-                <span class="cv-card-toggle-icon">+</span>
               </button>
               <div class="cv-card-body">
                 <ul class="cv-list">
@@ -410,7 +403,6 @@
             <article class="cv-card cv-card-collapsible">
               <button class="cv-card-toggle" type="button">
                 <span>Summer Schools</span>
-                <span class="cv-card-toggle-icon">+</span>
               </button>
               <div class="cv-card-body">
                 <ul class="cv-list">
@@ -577,6 +569,10 @@ function generateTriangulatedBackground() {
         ctx.fillStyle = pickColor(cx, cy);
         ctx.fill();
 
+        ctx.lineWidth = 1.2;           // thickness
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)';  // soft white lines
+        ctx.stroke();
+
         // Triangle 2: p1, p4, p3
         cx = (p1.x + p4.x + p3.x) / 3;
         cy = (p1.y + p4.y + p3.y) / 3;
@@ -587,6 +583,10 @@ function generateTriangulatedBackground() {
         ctx.closePath();
         ctx.fillStyle = pickColor(cx, cy);
         ctx.fill();
+
+        ctx.lineWidth = 1.2;           // thickness
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)';  // soft white lines
+        ctx.stroke();
       } else {
         // Triangle 1: p1, p2, p3
         let cx = (p1.x + p2.x + p3.x) / 3;
@@ -599,6 +599,10 @@ function generateTriangulatedBackground() {
         ctx.fillStyle = pickColor(cx, cy);
         ctx.fill();
 
+        ctx.lineWidth = 1.2;           // thickness
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)';  // soft white lines
+        ctx.stroke();
+
         // Triangle 2: p2, p4, p3
         cx = (p2.x + p4.x + p3.x) / 3;
         cy = (p2.y + p4.y + p3.y) / 3;
@@ -609,6 +613,10 @@ function generateTriangulatedBackground() {
         ctx.closePath();
         ctx.fillStyle = pickColor(cx, cy);
         ctx.fill();
+
+        ctx.lineWidth = 1.2;           // thickness
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)';  // soft white lines
+        ctx.stroke();
       }
     }
   }
@@ -833,12 +841,17 @@ document.addEventListener('DOMContentLoaded', function() {
     padding:20px;
     text-align:center;
   }
-  .section-light{
-    background-color:rgba(255, 255, 255, 0.9);
-    margin:20px;
-    padding:40px;
-    border-radius:10px;
-    box-shadow:0 4px 8px rgba(0,0,0,0.2);
+  .section-light {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    
+    border-radius: 12px;
+    margin: 20px 10px;
+    padding: 40px;
+
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
   }
     /* --- FIXED TOP COMMAND BANNER --- */
 /* --- FIXED TOP COMMAND BANNER --- */
@@ -935,13 +948,18 @@ document.addEventListener('DOMContentLoaded', function() {
   .gallery-item p:first-of-type {
     font-weight: 700;
   }
-  .footer{
-    background-color:#ED4264;
-    color:white;
-    padding:20px;
-    position:relative;
-    text-align:center;
-    z-index: 100;
+  .footer {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(0,0,0,0.15);
+    
+    position: relative;       /* normal flow */
+    width: 100%;
+    
+    padding: 20px 32px;
+    text-align: center;
+    color: #333;
+    z-index: 20000;
   }
     .show-more-btn {
     margin-top: 16px;
@@ -1085,21 +1103,25 @@ document.addEventListener('DOMContentLoaded', function() {
   /* Wrapper for a two-column layout */
   .about-news-wrapper {
     display: flex;
-    flex-direction: column;   /* default: stacked on mobile */
-    gap: 10px;
+    flex-direction: column;   /* stacked on mobile */
+    gap: 0px;                /* 10px between cards on mobile too */
+    padding: 0 10px;          /* 10px from page left/right */
   }
+
+  /* Remove horizontal margins on the cards inside this row */
   .about-news-wrapper .section-light {
-    margin: 10px;  /* was 20px — halves horizontal spacing */
+    margin: 20px 0;           /* only top/bottom margin here */
   }
-    /* Side-by-side on larger screens */
+
+  /* Side-by-side on larger screens */
   @media (min-width: 900px) {
     .about-news-wrapper {
-      flex-direction: row;
+      flex-direction: row;    /* put them side by side */
     }
 
     #bio.section,
     #news.section {
-      flex: 1 1 0;
+      flex: 1 1 0;            /* let them share the row */
     }
   }
 
