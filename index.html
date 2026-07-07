@@ -5,6 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Beatrice Vaienti - PhD, DHLAB, EPFL
   </title>
+
+  <meta name="description" content="Beatrice Vaienti — PhD in Digital Humanities (EPFL). Researcher in historical cartography and digital heritage; CV, publications, and portfolio."/>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png"/>
+  <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png"/>
+
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://beatricevaienti.github.io/"/>
+  <meta property="og:title" content="Beatrice Vaienti"/>
+  <meta property="og:description" content="PhD in Digital Humanities (EPFL) · Historical cartography, digital heritage, and computational methods. CV, publications, and portfolio."/>
+  <meta property="og:image" content="https://beatricevaienti.github.io/img/og-image.jpg"/>
+
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Beatrice Vaienti"/>
+  <meta name="twitter:description" content="PhD in Digital Humanities (EPFL) · Historical cartography, digital heritage, and computational methods. CV, publications, and portfolio."/>
+  <meta name="twitter:image" content="https://beatricevaienti.github.io/img/og-image.jpg"/>
+
   <!-- Top navigation -->
   <div class="section-nav">
   
@@ -527,30 +545,13 @@
           <textarea id="contact-message" name="message" rows="5" required></textarea>
 
           <button type="submit" class="contact-submit-btn">Send Message</button>
+          <p class="contact-form-status" aria-live="polite"></p>
         </form>
       </div>
     </section>
   </main>
   <footer role="contentinfo" class="footer">
     <p>© 2025 Beatrice Vaienti. All rights reserved.</p>
-
-    <div id="bg-controls" aria-label="Background customization panel">
-      <span class="bg-controls-title">Change background!</span>
-
-      <div class="bg-color-row">
-        <div class="bg-color-dots">
-          <input type="color" id="tri-color-1" value="#FFEDBC" class="bg-color-dot" aria-label="Background color 1">
-          <input type="color" id="tri-color-2" value="#FB5FB0" class="bg-color-dot" aria-label="Background color 2">
-          <input type="color" id="tri-color-3" value="#5FFBF1" class="bg-color-dot" aria-label="Background color 3">
-          <input type="color" id="tri-color-4" value="#ED4264" class="bg-color-dot" aria-label="Background color 4">
-        </div>
-
-        <button id="regen-bg-btn" class="bg-regen-btn" aria-label="Regenerate background">
-          ⟳
-        </button>
-      </div>
-
-    </div>
   </footer>
 
 
@@ -908,29 +909,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  // --- Contact form: submit via fetch so visitors stay on the site
+  // instead of being redirected to Formspree's default thank-you page ---
+  const contactForm = document.querySelector('.contact-form');
+  if (contactForm) {
+    const statusEl = contactForm.querySelector('.contact-form-status');
+    contactForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const submitBtn = contactForm.querySelector('.contact-submit-btn');
+      submitBtn.disabled = true;
+      statusEl.textContent = '';
+      statusEl.className = 'contact-form-status';
 
-  // --- Regen button click: re-generate background ---
-  const btn = document.getElementById('regen-bg-btn');
-  if (btn) {
-    btn.addEventListener('click', generateTriangulatedBackground);
-  }
-
-  // --- Color + slider controls for triangulation ---
-  const colorInputs = [
-    document.getElementById('tri-color-1'),
-    document.getElementById('tri-color-2'),
-    document.getElementById('tri-color-3'),
-    document.getElementById('tri-color-4')
-  ];
-
-  colorInputs.forEach(function(input, index) {
-    if (!input) return;
-    input.addEventListener('input', function() {
-      TRI_CONFIG.palette[index] = input.value;
-      // no immediate redraw: user will press the refresh button
+      fetch(contactForm.action, {
+        method: 'POST',
+        body: new FormData(contactForm),
+        headers: { 'Accept': 'application/json' }
+      }).then(function(response) {
+        if (response.ok) {
+          contactForm.reset();
+          statusEl.textContent = 'Thanks! Your message has been sent — I\'ll get back to you soon.';
+          statusEl.classList.add('contact-form-status--success');
+        } else {
+          statusEl.textContent = 'Something went wrong sending your message — please try again, or email me directly.';
+          statusEl.classList.add('contact-form-status--error');
+        }
+      }).catch(function() {
+        statusEl.textContent = 'Something went wrong sending your message — please try again, or email me directly.';
+        statusEl.classList.add('contact-form-status--error');
+      }).finally(function() {
+        submitBtn.disabled = false;
+      });
     });
-  });
-
+  }
 
 
 });
@@ -1222,75 +1233,9 @@ document.addEventListener('DOMContentLoaded', function() {
     padding: 16px 32px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     box-sizing: border-box;
     color: #333;
-  }
-
-  /* Right-side controls */
-  #bg-controls {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-    font-size: 0.85rem;
-  }
-
-  .bg-controls-title {
-    font-weight: 600;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    opacity: 0.8;
-  }
-
-  /* Row of dots + button */
-  .bg-color-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  /* Color dots */
-  .bg-color-dot {
-    appearance: none;
-    -webkit-appearance: none;
-    border-radius: 50%;
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    cursor: pointer;
-    border: 2px solid rgba(255,255,255,0.9);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.45);
-  }
-
-  .bg-color-dot::-webkit-color-swatch {
-    border-radius: 50%;
-    border: none;
-  }
-  .bg-color-dot::-webkit-color-swatch-wrapper {
-    padding: 0;
-  }
-
-  /* Refresh button */
-  .bg-regen-btn {
-    width: 28px;
-    margin-left: 6px;
-    height: 28px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s ease, transform 0.2s ease;
-  }
-
-  .bg-regen-btn:hover {
-    background: #ffffff;
-    transform: scale(1.08);
   }
 
 
@@ -1626,6 +1571,26 @@ document.addEventListener('DOMContentLoaded', function() {
     transform: scale(1.04);
   }
 
+  .contact-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+    transform: none;
+  }
+
+  .contact-form-status {
+    margin-top: 12px;
+    font-size: 14px;
+    min-height: 1.2em;
+  }
+
+  .contact-form-status--success {
+    color: #1a7a3c;
+  }
+
+  .contact-form-status--error {
+    color: #c0392b;
+  }
+
   /* Print-only CV header — hidden on screen, shown only when printing/saving as PDF */
   .print-header {
     display: none;
@@ -1663,7 +1628,6 @@ document.addEventListener('DOMContentLoaded', function() {
     #bio,
     #news,
     #contact,
-    #bg-controls,
     .footer,
     .show-more-btn,
     .print-cv-btn,
