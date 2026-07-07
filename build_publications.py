@@ -18,6 +18,7 @@ PLACEHOLDER_IMAGE = ORIGINAL_IMAGE_DIR / "placeholder.jpg"
 
 TARGET_SIZE = (600, 400)    # width, height in pixels for the cropped/downscaled images
 TARGET_RATIO = (3, 2)       # width:height aspect ratio for cropping (3:2 works nicely for cards)
+FLATTEN_BACKGROUND = (252, 249, 234)  # cream (#FCF9EA) used to fill transparent PNG areas
 # --------------------------------
 
 
@@ -122,7 +123,13 @@ def process_image_to_cropped(source: Path, dest: Path):
     CROPPED_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
     img = Image.open(source)
-    img = img.convert("RGB")
+    if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+        img = img.convert("RGBA")
+        background = Image.new("RGB", img.size, FLATTEN_BACKGROUND)
+        background.paste(img, mask=img.split()[-1])
+        img = background
+    else:
+        img = img.convert("RGB")
     w, h = img.size
 
     target_ratio = TARGET_RATIO[0] / TARGET_RATIO[1]
@@ -190,7 +197,7 @@ def get_image_src_for_entry(entry) -> str:
 def entry_to_card(entry) -> str:
     title = escape(entry.get("title", "").strip("{}"))
     authors = escape(format_authors(entry.get("author", "")))
-    venue = escape(entry.get("journal") or entry.get("booktitle", ""))
+    venue = escape(entry.get("journal") or entry.get("booktitle") or entry.get("school", ""))
     year = escape(entry.get("year", ""))
 
     url = get_entry_url(entry)
