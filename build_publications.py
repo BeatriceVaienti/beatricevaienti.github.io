@@ -30,7 +30,8 @@ def load_bib_entries(path):
 
 def format_authors(authors_str: str) -> str:
     """
-    Show up to 6 authors, then 'et al.' if more.
+    Show up to 6 authors, extended as needed so Vaienti is always listed,
+    then 'et al.' if more.
     Assumes standard BibTeX 'author' field:
     "Surname, Name and Second, Name and Third, Name"
     """
@@ -40,10 +41,16 @@ def format_authors(authors_str: str) -> str:
     raw = authors_str.replace("\n", " ")
     authors = [a.strip() for a in raw.split(" and ") if a.strip()]
 
-    if len(authors) <= 6:
+    cutoff = 6
+    for i, a in enumerate(authors):
+        if "vaienti" in a.lower():
+            cutoff = max(cutoff, i + 1)
+            break
+
+    if len(authors) <= cutoff:
         return "; ".join(authors)
     else:
-        return "; ".join(authors[:6]) + "; et al."
+        return "; ".join(authors[:cutoff]) + "; et al."
 
 
 def get_entry_url(entry) -> str | None:
