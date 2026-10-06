@@ -930,6 +930,73 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  // --- News "More" button: when the News card would be taller than the
+  // About Me card, clip the list to the last item that fits and offer a toggle ---
+  const bioCard = document.querySelector('#bio .section-light');
+  const newsCard = document.querySelector('#news .section-light');
+  const newsList = newsCard && newsCard.querySelector('.news-list');
+  if (bioCard && newsList) {
+    let newsExpanded = false;
+    const newsBtnWrap = document.createElement('div');
+    newsBtnWrap.className = 'news-toggle-wrap';
+    const newsBtn = document.createElement('button');
+    newsBtn.type = 'button';
+    newsBtn.className = 'show-more-btn';
+    newsBtn.setAttribute('aria-expanded', 'false');
+    newsBtnWrap.appendChild(newsBtn);
+    newsList.insertAdjacentElement('afterend', newsBtnWrap);
+
+    function layoutNews() {
+      if (newsExpanded) return;
+      // measure at full height, with the button shown so its space is counted
+      newsList.classList.remove('news-collapsible');
+      newsList.style.maxHeight = '';
+      newsBtnWrap.style.display = '';
+      newsBtn.textContent = 'More news';
+
+      const bioH = bioCard.getBoundingClientRect().height;
+      const btnH = newsBtnWrap.getBoundingClientRect().height;
+      const fullH = newsCard.getBoundingClientRect().height - btnH;
+      if (fullH <= bioH + 1) {
+        newsBtnWrap.style.display = 'none';
+        return;
+      }
+
+      // room left for the list, then snap down to the last whole item that fits
+      const listTop = newsList.getBoundingClientRect().top;
+      const room = newsList.scrollHeight - (fullH + btnH - bioH);
+      const items = Array.from(newsList.children);
+      let clip = items[0].getBoundingClientRect().bottom - listTop; // always show at least one
+      items.forEach(function(li) {
+        const bottom = li.getBoundingClientRect().bottom - listTop;
+        if (bottom <= room) clip = Math.max(clip, bottom);
+      });
+      newsList.style.maxHeight = Math.ceil(clip) + 'px';
+      newsList.classList.add('news-collapsible');
+    }
+
+    newsBtn.addEventListener('click', function() {
+      newsExpanded = !newsExpanded;
+      newsBtn.setAttribute('aria-expanded', newsExpanded ? 'true' : 'false');
+      if (newsExpanded) {
+        newsList.style.maxHeight = newsList.scrollHeight + 'px';
+        newsBtn.textContent = 'Less news';
+      } else {
+        layoutNews();
+        newsCard.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    });
+
+    // once fully open, drop the pixel cap so later reflows can't clip it
+    newsList.addEventListener('transitionend', function() {
+      if (newsExpanded) newsList.style.maxHeight = 'none';
+    });
+
+    layoutNews();
+    window.addEventListener('load', layoutNews); // fonts/images can change heights
+    window.addEventListener('resize', layoutNews);
+  }
+
   // --- Contact form: submit via fetch so visitors stay on the site
   // instead of being redirected to Formspree's default thank-you page ---
   const contactForm = document.querySelector('.contact-form');
@@ -1290,6 +1357,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
   .news-list li {
     margin-bottom: 12px;
+  }
+
+  /* Set by JS when News is taller than About Me: the list is clipped
+     (at a whole-item boundary) and a "More news" button expands it. */
+  .news-list.news-collapsible {
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+
+  .news-toggle-wrap {
+    text-align: center;
   }
 
   /* Use grid instead of flex for the CV two-column layout */
