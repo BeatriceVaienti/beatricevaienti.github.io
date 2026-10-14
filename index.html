@@ -951,6 +951,8 @@ document.addEventListener('DOMContentLoaded', function() {
       // measure at full height, with the button shown so its space is counted
       newsList.classList.remove('news-collapsible');
       newsList.style.maxHeight = '';
+      newsCard.classList.remove('news-matched');
+      newsCard.style.minHeight = '';
       newsBtnWrap.style.display = '';
       newsBtn.textContent = 'More news';
 
@@ -973,6 +975,14 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       newsList.style.maxHeight = Math.ceil(clip) + 'px';
       newsList.classList.add('news-collapsible');
+
+      // when the cards sit side by side, make the collapsed News card exactly
+      // as tall as About Me (the clip above snaps to whole items, so it's shorter)
+      const wrapper = newsCard.closest('.about-news-wrapper');
+      if (wrapper && getComputedStyle(wrapper).flexDirection === 'row') {
+        newsCard.classList.add('news-matched');
+        newsCard.style.minHeight = bioH + 'px';
+      }
     }
 
     newsBtn.addEventListener('click', function() {
@@ -1368,6 +1378,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
   .news-toggle-wrap {
     text-align: center;
+  }
+
+  /* Collapsed News card height-matched to About Me (min-height set by JS);
+     the button is pushed to the bottom so the spare space sits above it. */
+  .news-matched {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .news-matched .news-toggle-wrap {
+    margin-top: auto;
   }
 
   /* Use grid instead of flex for the CV two-column layout */
